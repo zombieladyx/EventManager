@@ -1,0 +1,15 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@page "/logout"
+@inject NavigationManager nav
+
+@code {
+    [CascadingParameter]
+    public HttpContext? httpContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        nav.NavigateTo("/");
+    }
+}
