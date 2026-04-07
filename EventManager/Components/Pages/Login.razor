@@ -13,6 +13,7 @@
     <div class="col-md-4">
         <Alert @ref="alert" />
         <section>
+            @*powiązanie z InputModel, metoda wywoła się tylko, jeśli walidacja przejdzie*@
             <EditForm Model="Input" method="post" OnValidSubmit="OnLogin" FormName="Login">
                 <DataAnnotationsValidator />
                 <hr />
@@ -40,29 +41,37 @@
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
+    //metoda logowania
     public async Task OnLogin()
     {
+        //pobranie użytkownika z bazy
         var user = userService.Verify(Input.Email, Input.Password);
 
+        //jeśli użytkownik nie istnieje: alert
         if (user is null)
         {
-            //alert
             alert.ShowFailed("Invalid Email or Password");
             return;
         }
 
+        //tworzenie Claims, info wyświetlane później w MainLayout do pokazania zalogowanego użytkownika
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Name, user.Email), //email użytkownika
+            new Claim(ClaimTypes.Role, user.Role) //rola użytkownika
         };
 
+        //utworznie tożsamości opartej na cookie auth
         var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+        //utworzenie pryncypału, który reprezentuje zalogowanego użytkownika
         ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimIdentity);
-        Guid key = Guid.NewGuid();
-        AuthMiddleware.Logins[key] = claimsPrincipal;
 
+        //utworzenie unikalnego klucza GUID
+        Guid key = Guid.NewGuid();
+        //wrzucenie użytkownika do słownika AuthMiddleware.Logins
+        AuthMiddleware.Logins[key] = claimsPrincipal;
+        //przekierowanie na /login?key=...
         nav.NavigateTo($"/login?key={key}", true);
     }
 

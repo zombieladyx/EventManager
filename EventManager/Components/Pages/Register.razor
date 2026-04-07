@@ -1,30 +1,31 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using EventManager.Components.Shared
-@using EventManager.Data
-@page "/Register"
+﻿@using System.ComponentModel.DataAnnotations @*potrzebny do walidacji*@ 
+@using EventManager.Components.Shared @*daje dostęp do komponentu Alert*@
+@using EventManager.Data @*daje dostęp do modeli i serwisów, np. User, UserService*@
+
+@*strona dostępna pod adresem /register, wstrzyknięcie serwisu do zapisu użytkownika*@
+@page "/Register" 
 @inject UserService userService
 @rendermode InteractiveServer
 
-
-<h1>Register</h1>
+<h1>Register</h1> @*nagłówek*@
 <div class="row">
     <div class="col-md-4">
-        <Alert @ref="alert" />
+        <Alert @ref="alert" /> @*referencja do komponentu Alert*@
         <section>
-            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="Register">
-                <DataAnnotationsValidator />
+            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="Register"> @*powiązanie z klasą InputModel, metoda wywoła się tylko, jeśli walidacja przejdzie*@
+                <DataAnnotationsValidator /> @*włącza walidację opartą na [Required] itp.*@
                 <hr />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" />
+                <div class="form-floating mb-3"> @*pole email, binding emaila, jeśli jest pusty, walidacje pokaże błąd*@
+                    <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" /> 
                     <label for="email" class="form-label">Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
-                <div class="form-floating mb-3">
+                <div class="form-floating mb-3"> @*pole hasło, binding hasła, jeśli jest puste, walidacje pokaże błąd*@
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" aria-required="true" />
                     <label for="password" class="form-label">Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
-                <div class="form-floating mb-3">
+                <div class="form-floating mb-3"> @*pole rola, użytkownik wybiera swoją rolę*@
                     <InputSelect class="form-select" @bind-Value="Input.Role" aria-required="true">
                         <option value="Admin">Admin</option>
                         <option value="DefaultUser">Default User</option>
@@ -33,7 +34,7 @@
                     <ValidationMessage For="() => Input.Role" class="text-danger" />
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button> @*przycisk do przesłania danych*@
                 </div>
             </EditForm>
         </section>
@@ -41,14 +42,17 @@
 </div>
 
 @code {
-    private Alert alert;
+    private Alert alert; //referencja do Alert
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private InputModel Input { get; set; } = new(); //przechowuje dane z formularza
 
+    //rejestracja użytkowników
     public void RegisterUser()
     {
+        //przekazanie obiektuUser do userService.SaveUser
         bool result = userService.SaveUser(
+            //utworzenie nowego obiektu User
             new User
                 {
                     Email = Input.Email,
@@ -56,24 +60,24 @@
                     Role = Input.Role
                 }
         );
-
+        //jeśli zapis się udał: zielony alert
         if (result)
         {
-            //result success
             alert.ShowSuccess("Register Successfully");
         }
+        //jeśli zapis się nie udał: czerwony alert
         else
         {
-            //result failed
             alert.ShowFailed("Register Failed");
         }
     }
 
+    //przechowuje dane wpisane przez użytkownika w formularzu, wszystkie pola wymagane
     private sealed class InputModel
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = "";
+        public string Email { get; set; } = ""; //get; set; potrzebne do powiązania @bind-Value
 
         [Required]
         [DataType(DataType.Password)]

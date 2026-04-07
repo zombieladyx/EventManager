@@ -1,51 +1,68 @@
+//dostęp do komponentów Blazor
 using EventManager.Components;
+//własne middleware (warstwa oprogramowania do komunikacji pomiędzy różnymi aplikacjami)
 using EventManager.Components.Middleware;
+//przestrzeń nazw z EventManagerContext
 using EventManager.Data;
+//dla cookie-based auth
 using Microsoft.AspNetCore.Authentication.Cookies;
+//dla konfiguracji EF Core (EntityFramework Core)
 using Microsoft.EntityFrameworkCore;
 
+//utworzenie obiketu builder, który zbiera konfiguracje, pozwala rejestrować serwisy itp.
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+//dla poprawnego działania komponentów .razor
+builder.Services.AddRazorComponents() //rejestruje obsługę komponentów Razor (Blazor)
+    .AddInteractiveServerComponents(); //włącza tryb interaktywny po stronie serwera (Blazor Server)
 
-builder.Services.AddDbContext<EventManagerContext>(options =>
+//konfiguracja bazy danych
+builder.Services.AddDbContext<EventManagerContext>(options => //rejestracja kontekstu EF Core w Dependency Injection
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")); //wykorzystanie SQL Servera, pobranie connection string do bazy danych z appsettings.json
 });
 
-builder.Services.AddScoped<UserService>();
+//rejestracja serwisu użytkowników
+builder.Services.AddScoped<UserService>(); //rejestracja UserService jako serwis o czasie życia scoped (nowa instancja na każde żądanie HTTP)
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+//konfiguracja uwierzytelniania (cookies)
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) //włącza mechanizm uwierzytelniania w aplikacji i używa schematu opartego na cookies
+    .AddCookie(options => //konfiguracja cookie auth
     {
-        options.LoginPath = "/login";
-        options.AccessDeniedPath = "/accessdenied";
+        options.LoginPath = "/login"; //jeśli użytkownik nie jest zalogowany, a wejdzie na stronę wymagającą autoryzacji, zostanie przekierowany na /login
+        options.AccessDeniedPath = "/accessdenied"; //jeśli użytkownik jest zalogowany, ale nie ma uprawnień, zostanie przekierowany na /accessdenied
     });
 
-builder.Services.AddAuthorization();
+//autoryzacja
+builder.Services.AddAuthorization(); //włącza system autoryzacji
 
+//budowanie aplikacji
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//obłsuga błędów i HSTS (mechanizm bezpieczeństwa, który wymusza na przeglądarkach internetowych łączenie się z witryną wyłącznie przez szyfrowany protokół HTTPS)
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error", createScopeForErrors: true); //globalny handler wyjątków, przekierowuje na /Error
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseHsts(); //włącza HSTS
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseMiddleware<AuthMiddleware>();
+//strony błędów i HTTPS
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true); //dla kodów typu 404, 500 itd. przekierowuje logicznie na /not-found
+app.UseHttpsRedirection(); //przekierowuje z HTTP na HTTPS
 
-app.UseAntiforgery();
+//uwierzytelnianie, autoryzacja, middleware
+app.UseAuthentication(); //odczytuje cookie
+app.UseAuthorization(); //sprawdza, czy użytkownik ma dostęp
+app.UseMiddleware<AuthMiddleware>(); //własne middleware
 
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+//antiforgery
+app.UseAntiforgery(); //włącza ochronę przed CSRF
 
+//statyczne pliki i mapowanie komponentów
+app.MapStaticAssets(); //obsługa plików statycznych, np. css
+app.MapRazorComponents<App>() //głównym komponentem aplikacji jest App
+    .AddInteractiveServerRenderMode(); //włącza interaktywny tryb Blazor Server dla tych komponentów
+
+//uruchomienie aplikacji
 app.Run();

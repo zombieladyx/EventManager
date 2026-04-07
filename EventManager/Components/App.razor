@@ -1,23 +1,25 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@*szablon całej aplikacji, który generuje finalny HTML wysyłany do przeglądarki*@
+
+<!DOCTYPE html> @*dokument HTML5*@
+<html lang="en"> @*język domyślny strony*@
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <ResourcePreloader />
-    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["EventManager.styles.css"]" />
-    <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <meta charset="utf-8" /> @*obsługa polskich znaków*@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> @*responsywność na telefonach*@
+    <base href="/" /> @*wszystkie ścieżki zaczynają się od /*@
+    <ResourcePreloader /> @*przyspiesza ładowanie aplikacji*@
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" /> @*ładowanie Bootstrapu*@
+    <link rel="stylesheet" href="@Assets["app.css"]" /> @*ładowanie app.css*@
+    <link rel="stylesheet" href="@Assets["EventManager.styles.css"]" /> @*ładowanie EventManager.styles.css*@
+    <ImportMap /> @*pozwala Blazorowi ładować moduły JavaScript bez bundlera*@
+    <link rel="icon" type="image/png" href="favicon.png" /> @*ikona strony*@
+    <HeadOutlet /> @*pozwala komponentom dynamicznie dodawać elementy do <head>*@
 </head>
 
 <body>
-    <Routes />
-    <ReconnectModal />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <Routes /> @*skanuje wszystkie komponenty z @page, generuje routing*@
+    <ReconnectModal /> @*pokazuje okienko, gdy połączenie z serwerem zostanie zerwane*@
+    <script src="@Assets["_framework/blazor.web.js"]"></script> @*ładuje główny skrypt Blazora*@
 </body>
 
 </html>

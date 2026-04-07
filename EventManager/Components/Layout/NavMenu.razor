@@ -1,15 +1,21 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
-<div class="top-row ps-3 navbar navbar-dark">
+
+@*nagłówek menu*@
+<div class="top-row ps-3 navbar navbar-dark"> @*ciemne tło*@
     <div class="container-fluid">
-        <a class="navbar-brand" href="">EventManager</a>
+        <a class="navbar-brand" href="">EventManager</a> @*link do strony głównej*@
     </div>
 </div>
 
+@*przycisk rozwijania menu*@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
+@*główna sekcja menu*@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    @*lista linków, menu pionowe*@
     <nav class="nav flex-column">
+        @*link do strony głównej*@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -17,6 +23,7 @@
         </div>
 
         <CascadingAuthenticationState>
+            @*widoczne tylko dla niezalogowanych*@
             <AuthorizeView>
                 <NotAuthorized>
                     <div class="nav-item px-3">
@@ -31,6 +38,7 @@
                     </div>
                 </NotAuthorized>
             </AuthorizeView>
+            @*widoczne tylko dla użytkownika Admin*@
             <AuthorizeView Roles="Admin">
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="counter">
@@ -38,6 +46,7 @@
                     </NavLink>
                 </div>
             </AuthorizeView>
+            @*widoczne tylko dla użytkownika DefaultUser*@
             <AuthorizeView Roles="DefaultUser">
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="weather">

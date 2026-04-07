@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace EventManager.Data;
 
+//encja EF Core, czyli klasa reprezentująca jeden rekord w tabeli users
+//każda właściwość odpowiada jednej kolumnie w tabeli users
 public partial class User
 {
     public string Email { get; set; } = null!;

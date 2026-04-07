@@ -4,12 +4,16 @@
 @inject NavigationManager nav
 
 @code {
+    //pobranie HttpContext
     [CascadingParameter]
     public HttpContext? httpContext { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        //usuwa cookie autoryzacyjne, czyści tożsamość użytkownika, AuthenticationStateProvider zwróci użytkownika niezalogowanego, AuthorizeView przestaje wyświetlać dane użytkownika,
+        //usuwa dostęp do stron chronionych [Authorize]
         await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        //przekierowanie na stronę główną
         nav.NavigateTo("/");
     }
 }

@@ -1,29 +1,30 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims
-@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Authorization @*potrzebne dla AuthorizeView itp.*@ 
+@using System.Security.Claims @*potrzebne dla ClaimTypes.Name, ClaimTypes.Role*@
+@inherits LayoutComponentBase //layout, a nie zwykły komponent
 
-@inject AuthenticationStateProvider auth
+@inject AuthenticationStateProvider auth 
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu /> @*menu boczne*@
     </div>
 
     <main>
         <div class="top-row px-4">
-            <CascadingAuthenticationState>
-                <AuthorizeView>
+            <CascadingAuthenticationState> @*udostępnia stan logowania wszystkim komponentom wewnątrz, dlatego AuthorizeView wie, czy użytkownik jest zalogowany*@
+                <AuthorizeView> @*renderuje zawartość tylko dla zalogowanych użytkowników, a jeśli użytkownik jest niezalogowany, nic nie pokaże*@
                     Hello @email - @role <a href="/logout" >Logout</a>
                 </AuthorizeView>
             </CascadingAuthenticationState>
         </div>
 
         <article class="content px-4">
-            @Body
+            @Body @*miejsce, gdzie renderują się wszystkie strony z @page*@
         </article>
     </main>
 </div>
 
+@*pokazuje się, gdy aplikacja Blazor Server straci połączenie lub wystąpi błąd*@
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
@@ -36,9 +37,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        //pobranie stanu logowania
         var state = await auth.GetAuthenticationStateAsync();
+        //pobranie użytkownika
         var user = state.User;
 
+        //jeśli użytkownik jest zalogowany, email i rola pobierane są z Claims
         if (user.Identity.IsAuthenticated)
         {
             email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;

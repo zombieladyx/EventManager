@@ -1,7 +1,9 @@
-﻿@if(IsVisible)
+﻿@if(IsVisible) //isVisible == true
 {
     <div class="alert @AlertType">
+        @*tekst alertu*@
         <span>@Message</span>
+        @*przycisk zamyka alert*@
         <button class="btn-close" style="float:right" @onclick="Hide"></button>
     </div>
 }
@@ -9,29 +11,31 @@
 @code {
     [Parameter]
     public string Message { get; set; }
-    public bool IsVisible { get; set; }
-    public string AlertType { get; set; }
+    public bool IsVisible { get; set; } //kontroluje widoczność
+    public string AlertType { get; set; } //ustawia kolor alertu
 
+    //poprawne, ustawia zielony alert, wywołuje Show(message)
     public void ShowSuccess(string message)
     {
         AlertType = "alert-success";
         Show(message);
     }
 
+    //niepoprawne, ustawia czerwony alert, wywołuje Show(message)
     public void ShowFailed(string message)
     {
         AlertType = "alert-danger";
         Show(message);
     }
 
-    private void Show(string message)
+    private void Show(string message) //ustawienie wiadomości, widoczności i zmiany stanu
     {
         Message = message;
         IsVisible = true;
         StateHasChanged();
     }
 
-    private void Hide()
+    private void Hide() //ukrywa alert
     {
         IsVisible = false;
         StateHasChanged();
