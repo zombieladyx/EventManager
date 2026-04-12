@@ -1,12 +1,190 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\App\\EventManager\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\data\\eventmanagercontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\data\\eventmanagercontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\data\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\data\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\data\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\data\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\components\\pages\\counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\components\\pages\\counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\components\\pages\\register.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\components\\pages\\register.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|c:\\app\\eventmanager\\eventmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E077F75-E197-E5E5-C20D-23F73F81D0A9}|EventManager\\EventManager.csproj|solutionrelative:eventmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EventManagerContext.cs",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Data\\EventManagerContext.cs",
+              "RelativeDocumentMoniker": "EventManager\\Data\\EventManagerContext.cs",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Data\\EventManagerContext.cs",
+              "RelativeToolTip": "EventManager\\Data\\EventManagerContext.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAgwBgAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-12T08:22:10.012Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "app.css",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\wwwroot\\app.css",
+              "RelativeDocumentMoniker": "EventManager\\wwwroot\\app.css",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\wwwroot\\app.css",
+              "RelativeToolTip": "EventManager\\wwwroot\\app.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-12T08:09:42.94Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainLayout.razor",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Components\\Layout\\MainLayout.razor",
+              "RelativeDocumentMoniker": "EventManager\\Components\\Layout\\MainLayout.razor",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Components\\Layout\\MainLayout.razor",
+              "RelativeToolTip": "EventManager\\Components\\Layout\\MainLayout.razor",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAB0AAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-12T07:48:26.745Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Components\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "EventManager\\Components\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Components\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "EventManager\\Components\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAACkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-12T07:54:41.038Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Counter.razor",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Counter.razor",
+              "RelativeDocumentMoniker": "EventManager\\Components\\Pages\\Counter.razor",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Counter.razor",
+              "RelativeToolTip": "EventManager\\Components\\Pages\\Counter.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-12T07:51:40.961Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "EventManager\\Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Login.razor",
+              "RelativeToolTip": "EventManager\\Components\\Pages\\Login.razor",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABQAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-12T07:49:09.374Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Register.razor",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Register.razor",
+              "RelativeDocumentMoniker": "EventManager\\Components\\Pages\\Register.razor",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Components\\Pages\\Register.razor",
+              "RelativeToolTip": "EventManager\\Components\\Pages\\Register.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-12T06:34:13.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Data\\UserService.cs",
+              "RelativeDocumentMoniker": "EventManager\\Data\\UserService.cs",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Data\\UserService.cs",
+              "RelativeToolTip": "EventManager\\Data\\UserService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-12T06:33:47.204Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Data\\User.cs",
+              "RelativeDocumentMoniker": "EventManager\\Data\\User.cs",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Data\\User.cs",
+              "RelativeToolTip": "EventManager\\Data\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-12T06:33:42.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\App\\EventManager\\EventManager\\Program.cs",
+              "RelativeDocumentMoniker": "EventManager\\Program.cs",
+              "ToolTip": "C:\\App\\EventManager\\EventManager\\Program.cs",
+              "RelativeToolTip": "EventManager\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-12T06:29:10.571Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
     }
   ]
 }

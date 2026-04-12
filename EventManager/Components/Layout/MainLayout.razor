@@ -3,6 +3,7 @@
 @inherits LayoutComponentBase //layout, a nie zwykły komponent
 
 @inject AuthenticationStateProvider auth 
+@inject NavigationManager nav
 
 <div class="page">
     <div class="sidebar">
@@ -12,8 +13,22 @@
     <main>
         <div class="top-row px-4">
             <CascadingAuthenticationState> @*udostępnia stan logowania wszystkim komponentom wewnątrz, dlatego AuthorizeView wie, czy użytkownik jest zalogowany*@
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <NavLink class="nav-link" href="login">
+                            <button class="btn btn-login">Login</button>
+                        </NavLink>
+                        <NavLink class="nav-link" href="register">
+                            <button class="btn btn-login">Register</button>
+                        </NavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
                 <AuthorizeView> @*renderuje zawartość tylko dla zalogowanych użytkowników, a jeśli użytkownik jest niezalogowany, nic nie pokaże*@
-                    Hello @email - @role <a href="/logout" >Logout</a>
+                    @*Hello @email - @role <a href="/logout" >Logout</a>*@
+                    Hello @email - @role
+                    <NavLink class="nav-link" href="logout">
+                        <button class="btn btn-login">Logout</button>
+                    </NavLink>
                 </AuthorizeView>
             </CascadingAuthenticationState>
         </div>

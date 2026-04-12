@@ -25,6 +25,7 @@
                     <label for="password" class="form-label">Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
+                <!--
                 <div class="form-floating mb-3"> @*pole rola, użytkownik wybiera swoją rolę*@
                     <InputSelect class="form-select" @bind-Value="Input.Role" aria-required="true">
                         <option value="Admin">Admin</option>
@@ -33,6 +34,7 @@
                     <label for="role" class="form-label">Role</label>
                     <ValidationMessage For="() => Input.Role" class="text-danger" />
                 </div>
+                -->
                 <div>
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button> @*przycisk do przesłania danych*@
                 </div>
@@ -57,7 +59,7 @@
                 {
                     Email = Input.Email,
                     Password = Input.Password,
-                    Role = Input.Role
+                    Role = "DefaultUser"
                 }
         );
         //jeśli zapis się udał: zielony alert
@@ -83,8 +85,8 @@
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Required]
-        [DataType(DataType.Text)]
-        public string Role { get; set; } = "";
+        //[Required]
+        //[DataType(DataType.Text)]
+        //public string Role { get; set; } = "";
     }
 }
