@@ -17,7 +17,8 @@ public partial class EventManagerContext : DbContext
     {
     }
 
-    public virtual DbSet<User> Users { get; set; } //każdy rekord z tabeli users mapuje się na obiekt Users
+    public virtual DbSet<User> Users { get; set; } //każdy rekord z tabeli users mapuje się na obiekt User
+    //public DbSet<Event> Events { get; set; } //każdy obiekt z tabeli Events mapuje się na obiekt Event
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
