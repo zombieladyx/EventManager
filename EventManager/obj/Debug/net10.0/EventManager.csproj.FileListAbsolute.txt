@@ -622,8 +622,6 @@ C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\comp
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\29u8bya7y4-{0}-63fj8s7r0e-63fj8s7r0e.gz
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\zzevibd4z7-{0}-0j3bgjxly4-0j3bgjxly4.gz
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\myaf23gskh-{0}-abdmv1u4y3-abdmv1u4y3.gz
-C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\v7ewm0ukfk-{0}-b9228eflpl-b9228eflpl.gz
-C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\8xr7bohegn-{0}-2tj1sjhksk-2tj1sjhksk.gz
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\q9drkk7h94-{0}-56gmsfuib1-56gmsfuib1.gz
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\mwv8rj4xgq-{0}-56gmsfuib1-56gmsfuib1.gz
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\staticwebassets.build.json
@@ -638,3 +636,5 @@ C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\refi
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\EventManager.pdb
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\EventManager.genruntimeconfig.cache
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\ref\EventManager.dll
+C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\v7ewm0ukfk-{0}-qcnkhbt5lj-qcnkhbt5lj.gz
+C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\obj\Debug\net10.0\compressed\8xr7bohegn-{0}-12rnbzdyyc-12rnbzdyyc.gz

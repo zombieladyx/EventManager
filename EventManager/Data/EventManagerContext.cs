@@ -18,7 +18,7 @@ public partial class EventManagerContext : DbContext
     }
 
     public virtual DbSet<User> Users { get; set; } //każdy rekord z tabeli users mapuje się na obiekt User
-    //public DbSet<Event> Events { get; set; } //każdy obiekt z tabeli Events mapuje się na obiekt Event
+    public DbSet<Event> Events { get; set; } //każdy obiekt z tabeli Events mapuje się na obiekt Event
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +43,13 @@ public partial class EventManagerContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("ROLE");
+        });
+
+        //konfiguracja encji Event - dodano, aby EF Core miał zdefiniowany klucz główny
+        modelBuilder.Entity<Event>(entity =>
+        {
+            entity.HasKey(e => e.EVENT_ID);
+            entity.ToTable("Events");
         });
 
         OnModelCreatingPartial(modelBuilder);

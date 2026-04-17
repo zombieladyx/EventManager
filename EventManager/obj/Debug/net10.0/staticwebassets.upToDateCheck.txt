@@ -45,8 +45,8 @@ wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
 wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
 wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
 Components\Layout\ReconnectModal.razor.js
-C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\build\..\_framework\blazor.web.js
-C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\build\..\_framework\blazor.server.js
+C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.6\build\..\_framework\blazor.web.js
+C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.6\build\..\_framework\blazor.server.js
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\app.css
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -93,5 +93,5 @@ C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\lib\bootstrap\
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
 C:\Users\Kasia\Documents\GitHub\EventManager\EventManager\Components\Layout\ReconnectModal.razor.js
-C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\_framework\blazor.web.js
-C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\_framework\blazor.server.js
+C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.6\_framework\blazor.server.js
+C:\Users\Kasia\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.6\_framework\blazor.web.js
