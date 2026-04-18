@@ -1,4 +1,4 @@
-﻿@page "/events"
+﻿@page "/eventsManager"
 @using Microsoft.AspNetCore.Authorization
 @using EventManager.Data
 @rendermode InteractiveServer
@@ -35,6 +35,12 @@ else
                     <td>@ev.SPACE_LIMIT</td>
                     <td>@ev.CURR_SPACE</td>
                     <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">Szczegóły</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary">Dołącz</button>
+                    </td>
                 </tr>
             }
         </tbody>

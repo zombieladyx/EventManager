@@ -20,4 +20,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\Pages\Events\Admin\" />
+  </ItemGroup>
+
 </Project>
