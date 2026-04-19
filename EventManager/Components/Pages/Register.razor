@@ -1,6 +1,7 @@
 ﻿@using System.ComponentModel.DataAnnotations @*potrzebny do walidacji*@ 
 @using EventManager.Components.Shared @*daje dostęp do komponentu Alert*@
 @using EventManager.Data @*daje dostęp do modeli i serwisów, np. User, UserService*@
+@using System.Text.RegularExpressions
 
 @*strona dostępna pod adresem /register, wstrzyknięcie serwisu do zapisu użytkownika*@
 @page "/Register" 
@@ -49,19 +50,50 @@
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new(); //przechowuje dane z formularza
 
+    public string Encrypt(string plainText)
+    {
+        string encryptPassword = Eramake.eCryptography.Encrypt(plainText);
+        return encryptPassword;
+    }
+
+    public string Decrypt(string cipher)
+    {
+        string decryptPassword = Eramake.eCryptography.Decrypt(cipher);
+        return decryptPassword;
+    }
+
     //rejestracja użytkowników
     public void RegisterUser()
     {
+        string encryptPassword;
+
+        //wymóg, aby hasło zawierało duże litery i małe litery i cyfry
+        if (!(Regex.IsMatch(Input.Password, "[A-Z]") && Regex.IsMatch(Input.Password, "[a-z]") && Regex.IsMatch(Input.Password, "[0-9]")))
+        {
+            alert.ShowFailed("Password must contain uppercase letters, lowercase letters and numbers");
+            return;
+        }
+
+        //wymóg, aby hasło składało się z przynajmniej 8 znaków
+        if (Input.Password.Length < 8)
+        {
+            alert.ShowFailed("Password must be at least 8 characters long");
+            return;
+        }
+
+        encryptPassword = Encrypt(Input.Password);
+
         //przekazanie obiektuUser do userService.SaveUser
         bool result = userService.SaveUser(
             //utworzenie nowego obiektu User
             new User
                 {
                     Email = Input.Email,
-                    Password = Input.Password,
+                    Password = encryptPassword,
                     Role = "DefaultUser"
                 }
         );
+
         //jeśli zapis się udał: zielony alert
         if (result)
         {

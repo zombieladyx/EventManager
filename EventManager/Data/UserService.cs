@@ -31,10 +31,21 @@
         //logowanie użytkownika, szukanie użytkownika o podanym emailu i haśle
         public User? Verify(string email, string password)
         {
+            //zaszyfrowania hasła podanego przez użytkownika przy logowaniu
+            string encryptPassword;
+            encryptPassword = Encrypt(password);
+
             //zwróci użytkownika, jeśli dane są poprawne albo null jeśli nie ma takiego użytkownika
             //porównanie emaila ignoruje wielkość liter, porównanie hasła jest bezpośrednie
             return context.Users.FirstOrDefault(x => x.Email.ToLower() == email.ToLower()
-                    && x.Password == password);
+                    && x.Password == encryptPassword);
+        }
+
+        //metoda szyfrująca
+        public string Encrypt(string plainText)
+        {
+            string encryptPassword = Eramake.eCryptography.Encrypt(plainText);
+            return encryptPassword;
         }
     }
 }
