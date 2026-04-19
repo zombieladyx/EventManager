@@ -1,5 +1,3 @@
-# Visual Studio
-.vs/
-EventManager/obj/
-EventManager/bin/
 /.vs
+/EventManager/bin
+/EventManager/obj
