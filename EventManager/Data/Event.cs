@@ -2,7 +2,7 @@
 {
     public class Event
     {
-        public int EVENT_ID { get; set; }
+        public string EVENT_ID { get; set; } = string.Empty;
         public string SHORT_DESC { get; set; } = string.Empty;
         public string DESCRIPTION { get; set; } = string.Empty;
         public int SPACE_LIMIT { get; set; }

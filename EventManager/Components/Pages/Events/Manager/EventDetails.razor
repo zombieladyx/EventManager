@@ -1,4 +1,4 @@
-﻿@page "/eventsManager/{Id:int}"
+﻿@page "/eventsManager/{Id}"
 @using Microsoft.AspNetCore.Authorization
 @using EventManager.Data
 @rendermode InteractiveServer
@@ -9,7 +9,7 @@
 {
     <div class="alert alert-info">Ładowanie szczegółów eventu...</div>
 }
-else if (ev.EVENT_ID == 0)
+else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
     <div class="alert alert-warning">Event nie znaleziony.</div>
 }
@@ -46,7 +46,7 @@ else
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public string Id { get; set; } = string.Empty;
     private Event? ev;
 
     protected override async Task OnInitializedAsync()

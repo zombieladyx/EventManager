@@ -1,2 +1,4 @@
 # Visual Studio
 .vs/
+EventManager/obj/
+EventManager/bin/

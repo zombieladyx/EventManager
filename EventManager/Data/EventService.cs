@@ -10,7 +10,7 @@ namespace EventManager.Data
 
         public async Task<List<Event>> GetEventsAsync() => await _context.Events.ToListAsync();
 
-        public async Task<Event?> GetEventAsync(int id) => await _context.Events.FindAsync(id);
+        public async Task<Event?> GetEventAsync(string id) => await _context.Events.FindAsync(id);
 
         public async Task AddEventAsync(Event ev)
         {
@@ -24,7 +24,7 @@ namespace EventManager.Data
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteEventAsync(int id)
+        public async Task DeleteEventAsync(string id)
         {
             var ev = await GetEventAsync(id);
             if (ev != null)
