@@ -36,6 +36,18 @@ else
         </div>
         <div class="card-footer">
             <button class="btn btn-secondary me-2" @onclick="BackToList">Powrót do listy</button>
+            @if (isJoined)
+            {
+                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">Opuść (już dołączyłeś)</button>
+            }
+            else if (ev?.CURR_SPACE < ev?.SPACE_LIMIT)
+            {
+                <button class="btn btn-success me-2" @onclick="JoinEvent">Dołącz do eventu</button>
+            }
+            else
+            {
+                <span class="badge bg-danger me-2">Brak wolnych miejsc</span>
+            }
         </div>
     </div>
 }
@@ -43,10 +55,13 @@ else
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
     private Event? ev;
+    private bool isJoined = false;
+    private string currentUserId = "1";  // Pobierz z autentykacji/contextu
 
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventAsync(Id);
+        isJoined = await EventService.IsUserJoined(currentUserId, Id);
     }
 
     private string GetBadgeClass()
@@ -63,5 +78,21 @@ else
     }
 
     private void BackToList() => Navigation.NavigateTo("/events");
+
+    private async Task JoinEvent()
+    {
+        await EventService.JoinEventAsync(currentUserId, Id);
+        isJoined = true;
+        StateHasChanged();
+        ev.CURR_SPACE++;  // Odśwież dane
+    }
+
+    private async Task LeaveEvent()
+    {
+        await EventService.LeaveEventAsync(currentUserId, Id);
+        isJoined = false;
+        StateHasChanged();
+        ev.CURR_SPACE--;
+    }
     
 }

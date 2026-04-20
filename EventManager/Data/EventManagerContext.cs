@@ -20,6 +20,8 @@ public partial class EventManagerContext : DbContext
     public virtual DbSet<User> Users { get; set; } //każdy rekord z tabeli users mapuje się na obiekt User
     public DbSet<Event> Events { get; set; } //każdy obiekt z tabeli Events mapuje się na obiekt Event
 
+    public DbSet<User_Event> User_Event { get; set; } //każdy obiekt z tabeli EventUsers mapuje się na obiekt EventUser
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //konfiguracja encji Users
@@ -52,7 +54,21 @@ public partial class EventManagerContext : DbContext
             entity.ToTable("Events");
         });
 
-        OnModelCreatingPartial(modelBuilder);
+        //konfiguracja encji User_Event - klucz złożony z Email i EventId, relacje do User i Event
+        modelBuilder.Entity<User_Event>()
+            .HasKey(eu => new { eu.Email, eu.EventId });
+
+        modelBuilder.Entity<User_Event>()
+            .HasOne(eu => eu.User)  
+            .WithMany(u => u.EventUsers)
+            .HasForeignKey(eu => eu.Email);
+
+        modelBuilder.Entity<User_Event>()
+            .HasOne(eu => eu.Event)
+            .WithMany(e => e.EventUsers)
+            .HasForeignKey(eu => eu.EventId);
+
+    OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

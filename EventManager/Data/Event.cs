@@ -8,5 +8,6 @@
         public int SPACE_LIMIT { get; set; }
         public int CURR_SPACE {  get; set; }
         public DateOnly EVENT_DATE {  get; set; }
+        public ICollection<User_Event> EventUsers { get; set; } = new List<User_Event>();
     }
 }

@@ -33,5 +33,52 @@ namespace EventManager.Data
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task JoinEventAsync(string userId, string eventId)
+        {
+            if (!await IsUserJoined(userId, eventId))
+            {
+                var eventUser = new User_Event { Email = userId, EventId = eventId };
+                _context.User_Event.Add(eventUser);
+                await _context.SaveChangesAsync();
+
+                // Zwiększ CURR_SPACE
+                var ev = await _context.Events.FindAsync(eventId);
+                if (ev != null)
+                {
+                    ev.CURR_SPACE++;
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task LeaveEventAsync(string userId, string eventId)
+        {
+            var eventUser = await _context.User_Event
+                .FirstOrDefaultAsync(eu => eu.Email == userId && eu.EventId == eventId);
+
+            if (eventUser != null)
+            {
+                _context.User_Event.Remove(eventUser);
+                await _context.SaveChangesAsync();
+
+                var ev = await _context.Events.FindAsync(eventId);
+                if (ev != null)
+                {
+                    ev.CURR_SPACE--;
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<bool> IsUserJoined(string userId, string eventId) =>
+            await _context.User_Event.AnyAsync(eu => eu.Email == userId && eu.Event_Id == eventId);
+
+        public async Task<List<User>> GetEventUsersAsync(string eventId) =>
+            await _context.User_Event
+                .Where(eu => eu.EventId == eventId)
+                .Include(eu => eu.User)
+                .Select(eu => eu.User)
+                .ToListAsync();
     }
 }
