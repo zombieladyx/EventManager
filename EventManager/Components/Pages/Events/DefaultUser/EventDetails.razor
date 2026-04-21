@@ -56,7 +56,7 @@ else
     [Parameter] public string Id { get; set; } = string.Empty;
     private Event? ev;
     private bool isJoined = false;
-    private string currentUserId = "1";  // Pobierz z autentykacji/contextu
+    private string currentUserId = "";  // Pobierz z autentykacji/contextu
 
     protected override async Task OnInitializedAsync()
     {

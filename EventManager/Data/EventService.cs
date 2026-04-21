@@ -38,7 +38,7 @@ namespace EventManager.Data
         {
             if (!await IsUserJoined(userId, eventId))
             {
-                var eventUser = new User_Event { Email = userId, EventId = eventId };
+                var eventUser = new User_Event { Email = userId, EVENT_ID = eventId };
                 _context.User_Event.Add(eventUser);
                 await _context.SaveChangesAsync();
 
@@ -55,7 +55,7 @@ namespace EventManager.Data
         public async Task LeaveEventAsync(string userId, string eventId)
         {
             var eventUser = await _context.User_Event
-                .FirstOrDefaultAsync(eu => eu.Email == userId && eu.EventId == eventId);
+                .FirstOrDefaultAsync(eu => eu.Email == userId && eu.EVENT_ID == eventId);
 
             if (eventUser != null)
             {
@@ -72,11 +72,11 @@ namespace EventManager.Data
         }
 
         public async Task<bool> IsUserJoined(string userId, string eventId) =>
-            await _context.User_Event.AnyAsync(eu => eu.Email == userId && eu.Event_Id == eventId);
+            await _context.User_Event.AnyAsync(eu => eu.Email == userId && eu.EVENT_ID == eventId);
 
         public async Task<List<User>> GetEventUsersAsync(string eventId) =>
             await _context.User_Event
-                .Where(eu => eu.EventId == eventId)
+                .Where(eu => eu.EVENT_ID == eventId)
                 .Include(eu => eu.User)
                 .Select(eu => eu.User)
                 .ToListAsync();

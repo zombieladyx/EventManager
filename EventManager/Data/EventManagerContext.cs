@@ -56,7 +56,7 @@ public partial class EventManagerContext : DbContext
 
         //konfiguracja encji User_Event - klucz złożony z Email i EventId, relacje do User i Event
         modelBuilder.Entity<User_Event>()
-            .HasKey(eu => new { eu.Email, eu.EventId });
+            .HasKey(eu => new { eu.Email, eu.EVENT_ID });
 
         modelBuilder.Entity<User_Event>()
             .HasOne(eu => eu.User)  
@@ -66,7 +66,7 @@ public partial class EventManagerContext : DbContext
         modelBuilder.Entity<User_Event>()
             .HasOne(eu => eu.Event)
             .WithMany(e => e.EventUsers)
-            .HasForeignKey(eu => eu.EventId);
+            .HasForeignKey(eu => eu.EVENT_ID);
 
     OnModelCreatingPartial(modelBuilder);
     }
