@@ -4,6 +4,7 @@
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+@inject UserService UserService
 
 @if (ev == null)
 {
@@ -56,11 +57,12 @@ else
     [Parameter] public string Id { get; set; } = string.Empty;
     private Event? ev;
     private bool isJoined = false;
-    private string currentUserId = "";  // Pobierz z autentykacji/contextu
+    private string currentUserId = string.Empty;  // Pobierz z autentykacji/contextu
 
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventAsync(Id);
+        currentUserId = UserService.GetEmail(); // Pobierz email aktualnego użytkownika
         isJoined = await EventService.IsUserJoined(currentUserId, Id);
     }
 

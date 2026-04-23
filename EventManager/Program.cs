@@ -25,6 +25,7 @@ builder.Services.AddDbContext<EventManagerContext>(options => //rejestracja kont
 //rejestracja serwisu użytkowników
 builder.Services.AddScoped<UserService>(); //rejestracja UserService jako serwis o czasie życia scoped (nowa instancja na każde żądanie HTTP)
 builder.Services.AddScoped<IEventService, EventService>(); //rejestracja EventService
+builder.Services.AddHttpContextAccessor();// Rejestruje usługę IHttpContextAccessor, aby można było odczytywać aktualny HttpContext // i dane zalogowanego użytkownika, np. email z claims.
 //konfiguracja uwierzytelniania (cookies)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) //włącza mechanizm uwierzytelniania w aplikacji i używa schematu opartego na cookies
     .AddCookie(options => //konfiguracja cookie auth
