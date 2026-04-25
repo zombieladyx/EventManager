@@ -57,7 +57,7 @@ else
     [Parameter] public string Id { get; set; } = string.Empty;
     private Event? ev;
     private bool isJoined = false;
-    private string currentUserId = string.Empty;  // Pobierz z autentykacji/contextu
+    private string currentUserId = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,7 +86,6 @@ else
         await EventService.JoinEventAsync(currentUserId, Id);
         isJoined = true;
         StateHasChanged();
-        ev.CURR_SPACE++;  // Odśwież dane
     }
 
     private async Task LeaveEvent()
@@ -94,7 +93,6 @@ else
         await EventService.LeaveEventAsync(currentUserId, Id);
         isJoined = false;
         StateHasChanged();
-        ev.CURR_SPACE--;
     }
     
 }
