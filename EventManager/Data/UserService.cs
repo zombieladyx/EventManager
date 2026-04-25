@@ -52,9 +52,6 @@ namespace EventManager.Data
             return encryptPassword;
         }
 
-        //HTTP context do pobierania informacji o aktualnie zalogowanym użytkowniku
-      
-
         // Zwraca email aktualnie zalogowanego użytkownika
         public string GetEmail()
         {
