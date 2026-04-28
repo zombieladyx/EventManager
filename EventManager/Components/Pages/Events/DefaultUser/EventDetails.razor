@@ -1,25 +1,31 @@
-﻿@page "/events/{Id:int}"
+﻿@page "/events/{Id}"
 @using Microsoft.AspNetCore.Authorization
 @using EventManager.Data
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+@inject UserService UserService
 
+@* Jeśli event jeszcze się ładuje, pokazujemy komunikat informacyjny *@
 @if (ev == null)
 {
     <div class="alert alert-info">Ładowanie szczegółów eventu...</div>
 }
-else if (ev.EVENT_ID == 0)
+@* Jeśli nie znaleziono eventu o podanym ID, pokazujemy ostrzeżenie *@
+else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
     <div class="alert alert-warning">Event nie znaleziony.</div>
 }
+@* Gdy event został poprawnie pobrany, wyświetlamy jego szczegóły *@
 else
 {
     <div class="card">
         <div class="card-header">
+            @* Nagłówek karty z krótkim opisem eventu *@
             <h3>@ev.SHORT_DESC</h3>
         </div>
         <div class="card-body">
+            @* Lista szczegółów eventu *@
             <dl class="row">
                 <dt class="col-sm-3">Opis:</dt>
                 <dd class="col-sm-9">@ev.DESCRIPTION</dd>
@@ -28,40 +34,95 @@ else
                 <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
                 
                 <dt class="col-sm-3">Zajęte miejsca:</dt>
+                @* Wyświetlenie zajętych miejsc oraz procentu zapełnienia *@
                 <dd class="col-sm-9">@ev.CURR_SPACE <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span></dd>
                 
                 <dt class="col-sm-3">Data eventu:</dt>
-                <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy HH:mm")</dd>
+                <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
             </dl>
         </div>
         <div class="card-footer">
+            @* Przycisk powrotu do listy eventów *@
             <button class="btn btn-secondary me-2" @onclick="BackToList">Powrót do listy</button>
+
+            @* Jeśli aktualny użytkownik już dołączył do eventu, pokazujemy opcję opuszczenia *@
+            @if (isJoined)
+            {
+                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">Opuść (już dołączyłeś)</button>
+            }
+            @* Jeśli są jeszcze wolne miejsca, pozwalamy dołączyć *@
+            else if (ev?.CURR_SPACE < ev?.SPACE_LIMIT)
+            {
+                <button class="btn btn-success me-2" @onclick="JoinEvent">Dołącz do eventu</button>
+            }
+            @* Jeśli event jest pełny, pokazujemy informację o braku miejsc *@
+            else
+            {
+                <span class="badge bg-danger me-2">Brak wolnych miejsc</span>
+            }
         </div>
     </div>
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    @* ID eventu pobierane z adresu URL *@
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    @* Obiekt przechowujący dane pobranego eventu *@
     private Event? ev;
 
+    @* Flaga informująca, czy aktualnie zalogowany użytkownik jest zapisany na event *@
+    private bool isJoined = false;
+
+    @* Email aktualnie zalogowanego użytkownika pobrany z UserService *@
+    private string currentUserId = string.Empty;
+
+    @* Pobranie danych eventu oraz sprawdzenie, czy użytkownik już dołączył *@
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventAsync(Id);
+
+        @* Pobranie emaila zalogowanego użytkownika z danych autentykacji *@
+        currentUserId = UserService.GetEmail();
+
+        @* Sprawdzenie, czy użytkownik jest już przypisany do eventu *@
+        isJoined = await EventService.IsUserJoined(currentUserId, Id);
     }
 
+    @* Zwraca klasę CSS dla badge na podstawie procentu zajętości miejsc *@
     private string GetBadgeClass()
     {
         if (ev == null) return "";
+
         var percent = (double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100;
+
         return percent > 90 ? "bg-danger" : percent > 70 ? "bg-warning" : "bg-success";
     }
 
+    @* Zwraca procent zajętości miejsc jako tekst *@
     private string GetOccupancyPercent()
     {
         if (ev == null) return "";
+
         return Math.Round((double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100).ToString();
     }
 
+    @* Powrót do listy eventów *@
     private void BackToList() => Navigation.NavigateTo("/events");
-    
+
+    @* Dołączenie aktualnego użytkownika do eventu *@
+    private async Task JoinEvent()
+    {
+        await EventService.JoinEventAsync(currentUserId, Id);
+        isJoined = true;
+        StateHasChanged();
+    }
+
+    @* Usunięcie powiązania użytkownika z eventem *@
+    private async Task LeaveEvent()
+    {
+        await EventService.LeaveEventAsync(currentUserId, Id);
+        isJoined = false;
+        StateHasChanged();
+    }
 }

@@ -5,16 +5,20 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 
+@* Nagłówek strony z listą eventów *@
 <h3>Lista Eventów</h3>
 
+@* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
 @if (events == null)
 {
     <p>Ładowanie...</p>
 }
+@* Gdy lista została pobrana, wyświetlamy tabelę *@
 else
 {
     <table class="table">
         <thead>
+            @* Nagłówki kolumn tabeli *@
             <tr>
                 <th>ID</th>
                 <th>Short Desc</th>
@@ -26,6 +30,7 @@ else
             </tr>
         </thead>
         <tbody>
+            @* Iteracja po wszystkich eventach i wyświetlenie ich w wierszach tabeli *@
             @foreach (var ev in events)
             {
                 <tr>
@@ -36,10 +41,10 @@ else
                     <td>@ev.CURR_SPACE</td>
                     <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">Szczegóły</button>
-                    </td>
-                    <td>
-                        <button class="btn btn-secondary">Dołącz</button>
+                        @* Przycisk prowadzący do strony ze szczegółami konkretnego eventu *@
+                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">
+                            Szczegóły
+                        </button>
                     </td>
                 </tr>
             }
@@ -48,11 +53,12 @@ else
 }
 
 @code {
+    @* Lista eventów pobrana z serwisu *@
     private List<Event>? events;
 
+    @* Pobranie wszystkich eventów podczas inicjalizacji komponentu *@
     protected override async Task OnInitializedAsync()
     {
         events = await EventService.GetEventsAsync();
     }
-
 }
