@@ -22,7 +22,6 @@ else
             <tr>
                 <th>ID</th>
                 <th>Short Desc</th>
-                <th>Opis</th>
                 <th>Limit miejsc</th>
                 <th>Aktualne miejsca</th>
                 <th>Data</th>
@@ -34,12 +33,11 @@ else
             @foreach (var ev in events)
             {
                 <tr>
-                    <td>@ev.EVENT_ID</td>
-                    <td>@ev.SHORT_DESC</td>
-                    <td>@ev.DESCRIPTION</td>
-                    <td>@ev.SPACE_LIMIT</td>
-                    <td>@ev.CURR_SPACE</td>
-                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
+                    <td>@ev.EVENT_ID</td>                           @*Identyfikator eventu*@ 
+                    <td>@ev.SHORT_DESC</td>                         @*Krótki opis eventu*@ 
+                    <td>@ev.SPACE_LIMIT</td>                        @*Limit miejsc*@ 
+                    <td>@ev.CURR_SPACE</td>                         @*Aktualne miejsca*@ 
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @*Data eventu*@
                     <td>
                         @* Przycisk prowadzący do strony ze szczegółami konkretnego eventu *@
                         <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">

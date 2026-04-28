@@ -1,0 +1,76 @@
+﻿@page "/eventsManager"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject IEventService EventService
+@inject NavigationManager Navigation
+
+@* Nagłówek strony z listą eventów dla managera *@
+<h3>Lista Eventów</h3>
+
+@* Jeśli dane jeszcze nie zostały pobrane z bazy, pokazujemy komunikat ładowania *@
+@if (events == null)
+{
+    <p>Ładowanie...</p>
+}
+else
+{
+    @* Przycisk prowadzący do formularza dodawania nowego wydarzenia *@
+    <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManagerCreate"))">
+        Dodaj wydarzenie
+    </button>
+
+    @* Tabela prezentująca wszystkie eventy pobrane z bazy *@
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Short Desc</th>
+                <th>Limit miejsc</th>
+                <th>Aktualne miejsca</th>
+                <th>Data</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Iteracja po kolekcji eventów i wyświetlenie każdego w osobnym wierszu *@
+            @foreach (var ev in events)
+            {
+                <tr>
+                    @* Identyfikator wydarzenia *@
+                    <td>@ev.EVENT_ID</td>
+
+                    @* Krótki opis wydarzenia *@
+                    <td>@ev.SHORT_DESC</td>
+
+                    @* Maksymalna liczba dostępnych miejsc *@
+                    <td>@ev.SPACE_LIMIT</td>
+
+                    @* Aktualna liczba zajętych miejsc *@
+                    <td>@ev.CURR_SPACE</td>
+
+                    @* Data wydarzenia sformatowana jako rok-miesiąc-dzień *@
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
+
+                    <td>
+                        @* Przycisk prowadzący do strony szczegółów wybranego wydarzenia *@
+                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManager/{ev.EVENT_ID}"))">
+                            Szczegóły
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    // Lista eventów pobrana z serwisu
+    private List<Event>? events;
+
+    // Po załadowaniu komponentu pobieramy wszystkie eventy z bazy danych
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetEventsAsync();
+    }
+}

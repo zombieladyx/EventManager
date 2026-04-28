@@ -1,0 +1,98 @@
+﻿@page "/eventsManagerCreate"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject IEventService EventService
+@inject NavigationManager Navigation
+
+@* Nagłówek strony z formularzem dodawania nowego wydarzenia *@
+<h3>Dodaj nowe wydarzenie</h3>
+
+@* Formularz Blazor powiązany z obiektem newEvent.
+   Po poprawnym wypełnieniu i zatwierdzeniu wywołuje metodę HandleSubmit. *@
+<EditForm Model="newEvent" OnValidSubmit="HandleSubmit">
+    @* Włącza walidację opartą na DataAnnotations z modelu Event *@
+    <DataAnnotationsValidator />
+
+    @* Wyświetla podsumowanie wszystkich błędów walidacji *@
+    <ValidationSummary />
+
+    @* Pole do wpisania identyfikatora wydarzenia.
+       Id musi mieć dokładnie 6 znaków. *@
+    <div class="mb-3">
+        <label class="form-label">Id wydarzenia (6 znaków)</label>
+        <InputText @bind-Value="newEvent.EVENT_ID" class="form-control" />
+    </div>
+
+    @* Pole na krótki opis wydarzenia *@
+    <div class="mb-3">
+        <label class="form-label">Krótki opis</label>
+        <InputText @bind-Value="newEvent.SHORT_DESC" class="form-control" />
+    </div>
+
+    @* Pole na długi opis wydarzenia *@
+    <div class="mb-3">
+        <label class="form-label">Długi opis</label>
+        <InputTextArea @bind-Value="newEvent.DESCRIPTION" class="form-control" />
+    </div>
+
+    @* Pole na liczbę dostępnych miejsc *@
+    <div class="mb-3">
+        <label class="form-label">Liczba dostępnych miejsc</label>
+        <InputNumber @bind-Value="newEvent.SPACE_LIMIT" class="form-control" />
+    </div>
+
+    @* Pole wyboru daty wydarzenia *@
+    <div class="mb-3">
+        <label class="form-label">Data wydarzenia</label>
+        <InputDate @bind-Value="eventDate" class="form-control" />
+    </div>
+
+    @* Przycisk zapisujący nowe wydarzenie *@
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+
+    @* Przycisk anulujący dodawanie i wracający do listy *@
+    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Anuluj</button>
+</EditForm>
+
+@code {
+    // Obiekt reprezentujący nowe wydarzenie w formularzu
+    private Event newEvent = new();
+
+    // Tymczasowa zmienna przechowująca datę w formacie DateTime,
+    // ponieważ InputDate łatwiej obsługuje ten typ w formularzu
+    private DateTime eventDate = DateTime.Today;
+
+    // Inicjalizacja formularza - nowe wydarzenie zaczyna z liczbą zajętych miejsc = 0
+    protected override void OnInitialized()
+    {
+        newEvent.CURR_SPACE = 0; // nowy event zaczyna bez zapisanych uczestników
+    }
+
+    // Metoda wywoływana po poprawnym zatwierdzeniu formularza
+    private async Task HandleSubmit()
+    {
+        // Dodatkowa kontrola poprawności identyfikatora:
+        // nie może być pusty i musi mieć dokładnie 6 znaków
+        if (string.IsNullOrWhiteSpace(newEvent.EVENT_ID) || newEvent.EVENT_ID.Length != 6)
+            return;
+
+        // Konwersja daty z DateTime na DateOnly zgodnie z modelem Event
+        newEvent.EVENT_DATE = DateOnly.FromDateTime(eventDate);
+
+        // Ustawienie zajętych miejsc na 0 przy tworzeniu nowego eventu
+        newEvent.CURR_SPACE = 0;
+
+        // Zapisanie nowego wydarzenia do bazy danych przez serwis
+        await EventService.AddEventAsync(newEvent);
+
+        // Po zapisaniu powrót do listy wydarzeń managera
+        Navigation.NavigateTo("/eventsManager");
+    }
+
+    // Powrót do listy bez zapisywania zmian
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/eventsManager");
+    }
+}
