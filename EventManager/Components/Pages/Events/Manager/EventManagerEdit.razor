@@ -4,48 +4,58 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 
-<h3>Edytuj wydarzenie</h3>
+@* Nagłówek strony z formularzem edycji wydarzenia *@
+<h3>Edit Event</h3>
 
 @if (editEvent == null)
 {
-    <p>Ładowanie danych wydarzenia...</p>
+    @* Komunikat podczas pobierania danych *@
+    <p>Loading event data...</p>
 }
 else
 {
+    @* Formularz edycji istniejącego wydarzenia *@
     <EditForm Model="editEvent" OnValidSubmit="ShowConfirmPopup">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
+        @* Id eventu tylko do odczytu, aby nie zmieniać klucza głównego *@
         <div class="mb-3">
-            <label class="form-label">Id wydarzenia (6 znaków)</label>
+            <label class="form-label">Event ID (6 characters)</label>
             <InputText @bind-Value="editEvent.EVENT_ID" class="form-control" disabled />
         </div>
 
+        @* Pole na krótki opis *@
         <div class="mb-3">
-            <label class="form-label">Krótki opis</label>
+            <label class="form-label">Short description</label>
             <InputText @bind-Value="editEvent.SHORT_DESC" class="form-control" />
         </div>
 
+        @* Pole na długi opis *@
         <div class="mb-3">
-            <label class="form-label">Długi opis</label>
+            <label class="form-label">Description</label>
             <InputTextArea @bind-Value="editEvent.DESCRIPTION" class="form-control" />
         </div>
 
+        @* Pole na limit miejsc *@
         <div class="mb-3">
-            <label class="form-label">Limit miejsc</label>
+            <label class="form-label">Seat limit</label>
             <InputNumber @bind-Value="editEvent.SPACE_LIMIT" class="form-control" />
         </div>
 
+        @* Pole wyboru daty wydarzenia *@
         <div class="mb-3">
-            <label class="form-label">Data wydarzenia</label>
+            <label class="form-label">Event date</label>
             <InputDate @bind-Value="eventDate" class="form-control" />
         </div>
 
-        <button type="submit" class="btn btn-primary">Zapisz</button>
-        <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Anuluj</button>
+        @* Przyciski akcji formularza *@
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
     </EditForm>
 }
 
+@* Popup z potwierdzeniem zapisu zmian *@
 @if (showConfirmPopup)
 {
     <div class="popup-overlay">
@@ -53,13 +63,13 @@ else
             <div class="popup-header">
                 <div class="popup-title-wrap">
                     <span class="popup-icon">⚠️</span>
-                    <span class="popup-title">Potwierdzenie zmian</span>
+                    <span class="popup-title">Confirm Changes</span>
                 </div>
                 <button type="button" class="popup-close" @onclick="HideConfirmPopup">×</button>
             </div>
 
             <div class="popup-body">
-                <p>Czy na pewno chcesz zapisać wprowadzone zmiany?</p>
+                <p>Are you sure you want to save the changes?</p>
             </div>
 
             <div class="popup-footer">
@@ -71,12 +81,19 @@ else
 }
 
 @code {
+    // Parametr pobierany z adresu URL
     [Parameter] public string Id { get; set; } = string.Empty;
 
+    // Obiekt edytowanego wydarzenia
     private Event? editEvent;
+
+    // Tymczasowa zmienna daty dla InputDate
     private DateTime eventDate = DateTime.Today;
+
+    // Flaga widoczności popupu potwierdzającego zapis
     private bool showConfirmPopup = false;
 
+    // Pobranie danych wydarzenia po załadowaniu strony
     protected override async Task OnInitializedAsync()
     {
         editEvent = await EventService.GetEventAsync(Id);
@@ -87,16 +104,19 @@ else
         }
     }
 
+    // Pokazuje popup potwierdzenia zapisu
     private void ShowConfirmPopup()
     {
         showConfirmPopup = true;
     }
 
+    // Ukrywa popup potwierdzenia zapisu
     private void HideConfirmPopup()
     {
         showConfirmPopup = false;
     }
 
+    // Zapisuje zmiany po potwierdzeniu użytkownika
     private async Task ConfirmSaveAsync()
     {
         if (editEvent == null)
@@ -107,6 +127,7 @@ else
         Navigation.NavigateTo("/eventsManager");
     }
 
+    // Anuluje edycję i wraca do listy
     private void Cancel()
     {
         Navigation.NavigateTo("/eventsManager");

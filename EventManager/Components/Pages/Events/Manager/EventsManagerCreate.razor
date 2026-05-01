@@ -6,91 +6,87 @@
 @inject NavigationManager Navigation
 
 @* Nagłówek strony z formularzem dodawania nowego wydarzenia *@
-<h3>Dodaj nowe wydarzenie</h3>
+<h3>Add New Event</h3>
 
-@* Formularz Blazor powiązany z obiektem newEvent.
-   Po poprawnym wypełnieniu i zatwierdzeniu wywołuje metodę HandleSubmit. *@
+@* Formularz tworzenia nowego wydarzenia *@
 <EditForm Model="newEvent" OnValidSubmit="HandleSubmit">
-    @* Włącza walidację opartą na DataAnnotations z modelu Event *@
+    @* Walidacja oparta na atrybutach w modelu Event *@
     <DataAnnotationsValidator />
 
-    @* Wyświetla podsumowanie wszystkich błędów walidacji *@
+    @* Wyświetlenie wszystkich błędów walidacji *@
     <ValidationSummary />
 
-    @* Pole do wpisania identyfikatora wydarzenia.
-       Id musi mieć dokładnie 6 znaków. *@
+    @* Pole na identyfikator wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Id wydarzenia (6 znaków)</label>
+        <label class="form-label">Event ID (6 characters)</label>
         <InputText @bind-Value="newEvent.EVENT_ID" class="form-control" />
     </div>
 
     @* Pole na krótki opis wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Krótki opis</label>
+        <label class="form-label">Short description</label>
         <InputText @bind-Value="newEvent.SHORT_DESC" class="form-control" />
     </div>
 
     @* Pole na długi opis wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Długi opis</label>
+        <label class="form-label">Description</label>
         <InputTextArea @bind-Value="newEvent.DESCRIPTION" class="form-control" />
     </div>
 
     @* Pole na liczbę dostępnych miejsc *@
     <div class="mb-3">
-        <label class="form-label">Liczba dostępnych miejsc</label>
+        <label class="form-label">Seat limit</label>
         <InputNumber @bind-Value="newEvent.SPACE_LIMIT" class="form-control" />
     </div>
 
     @* Pole wyboru daty wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Data wydarzenia</label>
+        <label class="form-label">Event date</label>
         <InputDate @bind-Value="eventDate" class="form-control" />
     </div>
 
     @* Przycisk zapisujący nowe wydarzenie *@
-    <button type="submit" class="btn btn-primary">Zapisz</button>
+    <button type="submit" class="btn btn-primary">Save</button>
 
     @* Przycisk anulujący dodawanie i wracający do listy *@
-    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Anuluj</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
 </EditForm>
 
 @code {
     // Obiekt reprezentujący nowe wydarzenie w formularzu
     private Event newEvent = new();
 
-    // Tymczasowa zmienna przechowująca datę w formacie DateTime,
-    // ponieważ InputDate łatwiej obsługuje ten typ w formularzu
+    // Tymczasowa zmienna przechowująca datę w formacie DateTime
     private DateTime eventDate = DateTime.Today;
 
     // Inicjalizacja formularza - nowe wydarzenie zaczyna z liczbą zajętych miejsc = 0
     protected override void OnInitialized()
     {
-        newEvent.CURR_SPACE = 0; // nowy event zaczyna bez zapisanych uczestników
+        newEvent.CURR_SPACE = 0;
     }
 
     // Metoda wywoływana po poprawnym zatwierdzeniu formularza
     private async Task HandleSubmit()
     {
-        // Dodatkowa kontrola poprawności identyfikatora:
-        // nie może być pusty i musi mieć dokładnie 6 znaków
+        // Sprawdzenie, czy identyfikator ma dokładnie 6 znaków
         if (string.IsNullOrWhiteSpace(newEvent.EVENT_ID) || newEvent.EVENT_ID.Length != 6)
             return;
 
-        // Konwersja daty z DateTime na DateOnly zgodnie z modelem Event
+        // Konwersja daty do formatu DateOnly zgodnego z modelem
         newEvent.EVENT_DATE = DateOnly.FromDateTime(eventDate);
 
-        // Ustawienie zajętych miejsc na 0 przy tworzeniu nowego eventu
+        // Ustawienie liczby zajętych miejsc na 0 przy tworzeniu
         newEvent.CURR_SPACE = 0;
 
-        // Zapisanie nowego wydarzenia do bazy danych przez serwis
+        // Zapisanie nowego wydarzenia do bazy
         await EventService.AddEventAsync(newEvent);
 
-        // Po zapisaniu powrót do listy wydarzeń managera
+        // Powrót do listy wydarzeń managera
         Navigation.NavigateTo("/eventsManager");
     }
 
-    // Powrót do listy bez zapisywania zmian
+    // Powrót do listy bez zapisywania
     private void Cancel()
     {
         Navigation.NavigateTo("/eventsManager");

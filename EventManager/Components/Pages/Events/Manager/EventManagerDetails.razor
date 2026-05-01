@@ -9,12 +9,12 @@
 @* Jeśli dane eventu jeszcze się nie załadowały, pokazujemy komunikat *@
 @if (ev == null)
 {
-    <div class="alert alert-info">Ładowanie szczegółów eventu...</div>
+    <div class="alert alert-info">Loading event details...</div>
 }
 @* Jeśli po pobraniu identyfikatora nie znaleziono eventu, pokazujemy ostrzeżenie *@
 else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
-    <div class="alert alert-warning">Event nie znaleziony.</div>
+    <div class="alert alert-warning">Event not found.</div>
 }
 @* Jeśli event został poprawnie pobrany, wyświetlamy jego szczegóły w karcie *@
 else
@@ -30,36 +30,37 @@ else
                 <dt class="col-sm-3">ID:</dt>
                 <dd class="col-sm-9">@ev.EVENT_ID</dd>
                 
-                <dt class="col-sm-3">Opis:</dt>
+                <dt class="col-sm-3">Description:</dt>
                 <dd class="col-sm-9">@ev.DESCRIPTION</dd>
                 
-                <dt class="col-sm-3">Limit miejsc:</dt>
+                <dt class="col-sm-3">Seat limit:</dt>
                 <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
                 
-                <dt class="col-sm-3">Zajęte miejsca:</dt>
+                <dt class="col-sm-3">Occupied seats:</dt>
                 @* Pokazanie liczby zajętych miejsc oraz procentu zapełnienia eventu *@
                 <dd class="col-sm-9">
                     @ev.CURR_SPACE
                     <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span>
                 </dd>
                 
-                <dt class="col-sm-3">Data eventu:</dt>
+                <dt class="col-sm-3">Event date:</dt>
                 @* Formatowanie daty w czytelnym formacie dzień.miesiąc.rok *@
                 <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
             </dl>
         </div>
         <div class="card-footer">
             @* Przycisk do edycji eventu, przechodzący do strony edycji *@
-            <button class="btn btn-warning me-2" @onclick="EditEvent">Edytuj</button>
+            <button class="btn btn-warning me-2" @onclick="EditEvent">Edit</button>
 
             @* Przycisk do usunięcia eventu *@
-            <button class="btn btn-danger" @onclick="ShowConfirmPopup">Usuń</button>
+            <button class="btn btn-danger" @onclick="ShowConfirmPopup">Delete</button>
 
             @* Przycisk powrotu do listy wszystkich eventów *@
-            <button class="btn btn-secondary me-2" @onclick="BackToList">Powrót do listy</button>
+            <button class="btn btn-secondary me-2" @onclick="BackToList">Back to list</button>
         </div>
     </div>
 }
+
 @if (showConfirmPopup)
 {
     <div class="popup-overlay">
@@ -84,13 +85,15 @@ else
         </div>
     </div>
 }
-@code {
 
+@code {
     // Parametr pobierany z adresu URL, identyfikujący konkretny event
     [Parameter] public string Id { get; set; } = string.Empty;
 
     // Obiekt przechowujący dane pobranego eventu
     private Event? ev;
+
+    // Flaga sterująca widocznością okna potwierdzenia usunięcia
     private bool showConfirmPopup = false;
 
     // Pobiera dane eventu po załadowaniu komponentu
@@ -124,15 +127,18 @@ else
     // Przenosi użytkownika z powrotem do listy eventów
     private void BackToList() => Navigation.NavigateTo("/eventsManager");
     
+    // Pokazuje popup z potwierdzeniem usunięcia
     private void ShowConfirmPopup()
     {
         showConfirmPopup = true;
     }
 
+    // Ukrywa popup z potwierdzeniem usunięcia
     private void HideConfirmPopup()
     {
         showConfirmPopup = false;
     }
+
     // Usuwa event z bazy danych, jeśli obiekt został poprawnie pobrany
     // Po usunięciu następuje powrót do listy
     private async Task DeleteEventAsync()

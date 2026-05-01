@@ -8,29 +8,29 @@ namespace EventManager.Data
         // Unikalny identyfikator eventu.
         // Musi mieć dokładnie 6 znaków.
         [Required]
-        [StringLength(6, MinimumLength = 6, ErrorMessage = "Id wydarzenia musi mieć dokładnie 6 znaków.")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Event ID must be exactly 6 characters long.")]
         public string EVENT_ID { get; set; } = string.Empty;
 
         // Krótki opis eventu, np. do wyświetlenia na liście.
         // Nie może przekroczyć 50 znaków.
         [Required]
-        [StringLength(50, ErrorMessage = "Krótki opis nie może być dłuższy niż 50 znaków.")]
+        [StringLength(50, ErrorMessage = "Short description cannot be longer than 50 characters.")]
         public string SHORT_DESC { get; set; } = string.Empty;
 
         // Pełny opis eventu.
         // Nie może przekroczyć 1000 znaków.
         [Required]
-        [StringLength(1000, ErrorMessage = "Pełny opis nie może być dłuższy niż 1000 znaków.")]
+        [StringLength(1000, ErrorMessage = "Full description cannot be longer than 1000 characters.")]
         public string DESCRIPTION { get; set; } = string.Empty;
 
         // Maksymalna liczba miejsc dostępnych na evencie.
         // Wartość musi być większa od 0.
-        [Range(1, int.MaxValue, ErrorMessage = "Liczba miejsc musi być większa od 0.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Seat limit must be greater than 0.")]
         public int SPACE_LIMIT { get; set; }
 
         // Aktualna liczba zajętych miejsc.
         // Wartość nie może być ujemna.
-        [Range(0, int.MaxValue, ErrorMessage = "Liczba zajętych miejsc nie może być ujemna.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Occupied seats cannot be negative.")]
         public int CURR_SPACE { get; set; }
 
         // Data odbycia się eventu.

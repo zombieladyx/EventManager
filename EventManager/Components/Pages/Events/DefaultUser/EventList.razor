@@ -6,12 +6,12 @@
 @inject NavigationManager Navigation
 
 @* Nagłówek strony z listą eventów *@
-<h3>Lista Eventów</h3>
+<h3>Events List</h3>
 
 @* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
 @if (events == null)
 {
-    <p>Ładowanie...</p>
+    <p>Loading...</p>
 }
 @* Gdy lista została pobrana, wyświetlamy tabelę *@
 else
@@ -22,10 +22,10 @@ else
             <tr>
                 <th>ID</th>
                 <th>Short Desc</th>
-                <th>Limit miejsc</th>
-                <th>Aktualne miejsca</th>
-                <th>Data</th>
-                <th>Akcje</th>
+                <th>Seat Limit</th>
+                <th>Occupied Seats</th>
+                <th>Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -33,15 +33,15 @@ else
             @foreach (var ev in events)
             {
                 <tr>
-                    <td>@ev.EVENT_ID</td>                           @*Identyfikator eventu*@ 
-                    <td>@ev.SHORT_DESC</td>                         @*Krótki opis eventu*@ 
-                    <td>@ev.SPACE_LIMIT</td>                        @*Limit miejsc*@ 
-                    <td>@ev.CURR_SPACE</td>                         @*Aktualne miejsca*@ 
-                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @*Data eventu*@
+                    <td>@ev.EVENT_ID</td>                           @* Identyfikator eventu *@
+                    <td>@ev.SHORT_DESC</td>                         @* Krótki opis eventu *@
+                    <td>@ev.SPACE_LIMIT</td>                        @* Limit miejsc *@
+                    <td>@ev.CURR_SPACE</td>                         @* Aktualne miejsca *@
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @* Data eventu *@
                     <td>
                         @* Przycisk prowadzący do strony ze szczegółami konkretnego eventu *@
                         <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">
-                            Szczegóły
+                            Details
                         </button>
                     </td>
                 </tr>

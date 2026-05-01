@@ -9,12 +9,12 @@
 @* Jeśli event jeszcze się ładuje, pokazujemy komunikat informacyjny *@
 @if (ev == null)
 {
-    <div class="alert alert-info">Ładowanie szczegółów eventu...</div>
+    <div class="alert alert-info">Loading event details...</div>
 }
 @* Jeśli nie znaleziono eventu o podanym ID, pokazujemy ostrzeżenie *@
 else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
-    <div class="alert alert-warning">Event nie znaleziony.</div>
+    <div class="alert alert-warning">Event not found.</div>
 }
 @* Gdy event został poprawnie pobrany, wyświetlamy jego szczegóły *@
 else
@@ -27,38 +27,41 @@ else
         <div class="card-body">
             @* Lista szczegółów eventu *@
             <dl class="row">
-                <dt class="col-sm-3">Opis:</dt>
+                <dt class="col-sm-3">Description:</dt>
                 <dd class="col-sm-9">@ev.DESCRIPTION</dd>
                 
-                <dt class="col-sm-3">Limit miejsc:</dt>
+                <dt class="col-sm-3">Seat limit:</dt>
                 <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
                 
-                <dt class="col-sm-3">Zajęte miejsca:</dt>
+                <dt class="col-sm-3">Occupied seats:</dt>
                 @* Wyświetlenie zajętych miejsc oraz procentu zapełnienia *@
-                <dd class="col-sm-9">@ev.CURR_SPACE <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span></dd>
+                <dd class="col-sm-9">
+                    @ev.CURR_SPACE
+                    <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span>
+                </dd>
                 
-                <dt class="col-sm-3">Data eventu:</dt>
+                <dt class="col-sm-3">Event date:</dt>
                 <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
             </dl>
         </div>
         <div class="card-footer">
             @* Przycisk powrotu do listy eventów *@
-            <button class="btn btn-secondary me-2" @onclick="BackToList">Powrót do listy</button>
+            <button class="btn btn-secondary me-2" @onclick="BackToList">Back to list</button>
 
             @* Jeśli aktualny użytkownik już dołączył do eventu, pokazujemy opcję opuszczenia *@
             @if (isJoined)
             {
-                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">Opuść (już dołączyłeś)</button>
+                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">Leave event (already joined)</button>
             }
             @* Jeśli są jeszcze wolne miejsca, pozwalamy dołączyć *@
             else if (ev?.CURR_SPACE < ev?.SPACE_LIMIT)
             {
-                <button class="btn btn-success me-2" @onclick="JoinEvent">Dołącz do eventu</button>
+                <button class="btn btn-success me-2" @onclick="JoinEvent">Join event</button>
             }
             @* Jeśli event jest pełny, pokazujemy informację o braku miejsc *@
             else
             {
-                <span class="badge bg-danger me-2">Brak wolnych miejsc</span>
+                <span class="badge bg-danger me-2">No free seats</span>
             }
         </div>
     </div>

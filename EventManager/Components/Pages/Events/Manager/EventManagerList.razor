@@ -5,57 +5,48 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 
-@* Nagłówek strony z listą eventów dla managera *@
-<h3>Lista Eventów</h3>
+@* Nagłówek strony z listą eventów *@
+<h3>Events List</h3>
 
-@* Jeśli dane jeszcze nie zostały pobrane z bazy, pokazujemy komunikat ładowania *@
+@* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
 @if (events == null)
 {
-    <p>Ładowanie...</p>
+    <p>Loading...</p>
 }
 else
 {
-    @* Przycisk prowadzący do formularza dodawania nowego wydarzenia *@
-    <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManagerCreate"))">
-        Dodaj wydarzenie
+    @* Przycisk dodawania nowego wydarzenia *@
+    <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo("/eventsManagerCreate"))">
+        Add Event
     </button>
 
-    @* Tabela prezentująca wszystkie eventy pobrane z bazy *@
+    @* Tabela z listą wszystkich wydarzeń *@
     <table class="table">
         <thead>
+            @* Nagłówki kolumn tabeli *@
             <tr>
                 <th>ID</th>
                 <th>Short Desc</th>
-                <th>Limit miejsc</th>
-                <th>Aktualne miejsca</th>
-                <th>Data</th>
-                <th>Akcje</th>
+                <th>Seat Limit</th>
+                <th>Occupied Seats</th>
+                <th>Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @* Iteracja po kolekcji eventów i wyświetlenie każdego w osobnym wierszu *@
+            @* Iteracja po wszystkich eventach i wyświetlenie ich w tabeli *@
             @foreach (var ev in events)
             {
                 <tr>
-                    @* Identyfikator wydarzenia *@
-                    <td>@ev.EVENT_ID</td>
-
-                    @* Krótki opis wydarzenia *@
-                    <td>@ev.SHORT_DESC</td>
-
-                    @* Maksymalna liczba dostępnych miejsc *@
-                    <td>@ev.SPACE_LIMIT</td>
-
-                    @* Aktualna liczba zajętych miejsc *@
-                    <td>@ev.CURR_SPACE</td>
-
-                    @* Data wydarzenia sformatowana jako rok-miesiąc-dzień *@
-                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
-
+                    <td>@ev.EVENT_ID</td>                           @* Identyfikator eventu *@
+                    <td>@ev.SHORT_DESC</td>                         @* Krótki opis eventu *@
+                    <td>@ev.SPACE_LIMIT</td>                        @* Limit miejsc *@
+                    <td>@ev.CURR_SPACE</td>                         @* Aktualne miejsca *@
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @* Data eventu *@
                     <td>
-                        @* Przycisk prowadzący do strony szczegółów wybranego wydarzenia *@
+                        @* Przycisk prowadzący do strony szczegółów konkretnego eventu *@
                         <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManager/{ev.EVENT_ID}"))">
-                            Szczegóły
+                            Details
                         </button>
                     </td>
                 </tr>
@@ -68,7 +59,7 @@ else
     // Lista eventów pobrana z serwisu
     private List<Event>? events;
 
-    // Po załadowaniu komponentu pobieramy wszystkie eventy z bazy danych
+    // Pobranie wszystkich eventów podczas inicjalizacji komponentu
     protected override async Task OnInitializedAsync()
     {
         events = await EventService.GetEventsAsync();
