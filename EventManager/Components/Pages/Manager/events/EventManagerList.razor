@@ -1,0 +1,67 @@
+﻿@page "/eventsManager"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject IEventService EventService
+@inject NavigationManager Navigation
+
+@* Nagłówek strony z listą eventów *@
+<h3>Events List</h3>
+
+@* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
+@if (events == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @* Przycisk dodawania nowego wydarzenia *@
+    <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo("/eventsManagerCreate"))">
+        Add Event
+    </button>
+
+    @* Tabela z listą wszystkich wydarzeń *@
+    <table class="table">
+        <thead>
+            @* Nagłówki kolumn tabeli *@
+            <tr>
+                <th>ID</th>
+                <th>Short Desc</th>
+                <th>Seat Limit</th>
+                <th>Occupied Seats</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Iteracja po wszystkich eventach i wyświetlenie ich w tabeli *@
+            @foreach (var ev in events)
+            {
+                <tr>
+                    <td>@ev.EVENT_ID</td>                           @* Identyfikator eventu *@
+                    <td>@ev.SHORT_DESC</td>                         @* Krótki opis eventu *@
+                    <td>@ev.SPACE_LIMIT</td>                        @* Limit miejsc *@
+                    <td>@ev.CURR_SPACE</td>                         @* Aktualne miejsca *@
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @* Data eventu *@
+                    <td>
+                        @* Przycisk prowadzący do strony szczegółów konkretnego eventu *@
+                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManager/{ev.EVENT_ID}"))">
+                            Details
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    // Lista eventów pobrana z serwisu
+    private List<Event>? events;
+
+    // Pobranie wszystkich eventów podczas inicjalizacji komponentu
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetEventsAsync();
+    }
+}

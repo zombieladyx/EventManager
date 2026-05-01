@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 namespace EventManager.Data
 {
     //serwis odpowiedzialny za operacje na użytkownikach
@@ -63,5 +64,34 @@ namespace EventManager.Data
                 // Jeśli nic nie znaleziono, zwraca pusty string
                 ?? string.Empty;
         }
+
+        //funkcje do usuwania usera z bazy danych
+        //funkcje używane są w panelu admina do banowania
+        // Pobiera wszystkich użytkowników z tabeli Users.
+        public async Task<List<User>> GetUsersAsync()
+        {
+            return await context.Users.ToListAsync();
+        }
+
+        // Pobiera pojedynczego użytkownika po adresie e-mail.
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await context.Users.FindAsync(email);
+        }
+
+        // Usuwa użytkownika, jeśli istnieje w bazie.
+        public async Task DeleteUserAsync(string email)
+        {
+            var user = await context.Users.FindAsync(email);
+
+            // Jeśli użytkownik nie został znaleziony, przerywamy operację.
+            if (user == null)
+                return;
+
+            // Usunięcie użytkownika z kontekstu i zapisanie zmian.
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
+        }
+
     }
 }

@@ -1,0 +1,152 @@
+﻿@page "/eventsManager/{Id}"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject IEventService EventService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@* Jeśli dane eventu jeszcze się nie załadowały, pokazujemy komunikat *@
+@if (ev == null)
+{
+    <div class="alert alert-info">Loading event details...</div>
+}
+@* Jeśli po pobraniu identyfikatora nie znaleziono eventu, pokazujemy ostrzeżenie *@
+else if (string.IsNullOrEmpty(ev.EVENT_ID))
+{
+    <div class="alert alert-warning">Event not found.</div>
+}
+@* Jeśli event został poprawnie pobrany, wyświetlamy jego szczegóły w karcie *@
+else
+{
+    <div class="card">
+        <div class="card-header">
+            @* Krótki opis eventu jako nagłówek karty *@
+            <h3>@ev.SHORT_DESC</h3>
+        </div>
+        <div class="card-body">
+            @* Lista szczegółów eventu w układzie etykieta-wartość *@
+            <dl class="row">
+                <dt class="col-sm-3">ID:</dt>
+                <dd class="col-sm-9">@ev.EVENT_ID</dd>
+                
+                <dt class="col-sm-3">Description:</dt>
+                <dd class="col-sm-9">@ev.DESCRIPTION</dd>
+                
+                <dt class="col-sm-3">Seat limit:</dt>
+                <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
+                
+                <dt class="col-sm-3">Occupied seats:</dt>
+                @* Pokazanie liczby zajętych miejsc oraz procentu zapełnienia eventu *@
+                <dd class="col-sm-9">
+                    @ev.CURR_SPACE
+                    <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span>
+                </dd>
+                
+                <dt class="col-sm-3">Event date:</dt>
+                @* Formatowanie daty w czytelnym formacie dzień.miesiąc.rok *@
+                <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            @* Przycisk do edycji eventu, przechodzący do strony edycji *@
+            <button class="btn btn-warning me-2" @onclick="EditEvent">Edit</button>
+
+            @* Przycisk do usunięcia eventu *@
+            <button class="btn btn-danger" @onclick="ShowConfirmPopup">Delete</button>
+
+            @* Przycisk powrotu do listy wszystkich eventów *@
+            <button class="btn btn-secondary me-2" @onclick="BackToList">Back to list</button>
+        </div>
+    </div>
+}
+
+@if (showConfirmPopup)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            <div class="popup-header">
+                <div class="popup-title-wrap">
+                    <span class="popup-icon">❌</span>
+                    <span class="popup-title">Delete Confirmation</span>
+                </div>
+
+                <button type="button" class="popup-close" @onclick="HideConfirmPopup">×</button>
+            </div>
+
+            <div class="popup-body">
+                <p>Are you sure you want to delete this record?</p>
+            </div>
+
+            <div class="popup-footer">
+                <button class="btn btn-danger" @onclick="DeleteEventAsync">Delete</button>
+                <button class="btn btn-outline-secondary" @onclick="HideConfirmPopup">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Parametr pobierany z adresu URL, identyfikujący konkretny event
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    // Obiekt przechowujący dane pobranego eventu
+    private Event? ev;
+
+    // Flaga sterująca widocznością okna potwierdzenia usunięcia
+    private bool showConfirmPopup = false;
+
+    // Pobiera dane eventu po załadowaniu komponentu
+    protected override async Task OnInitializedAsync()
+    {
+        ev = await EventService.GetEventAsync(Id);
+    }
+
+    // Zwraca klasę CSS badge na podstawie procentu zajętości miejsc
+    // Im więcej zajętych miejsc, tym bardziej alarmowy kolor
+    private string GetBadgeClass()
+    {
+        if (ev == null) return "";
+
+        var percent = (double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100;
+
+        return percent > 90 ? "bg-danger" : percent > 70 ? "bg-warning" : "bg-success";
+    }
+
+    // Zwraca procent zajętości miejsc jako tekst
+    private string GetOccupancyPercent()
+    {
+        if (ev == null) return "";
+
+        return Math.Round((double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100).ToString();
+    }
+
+    // Przenosi użytkownika do strony edycji wybranego eventu
+    private void EditEvent() => Navigation.NavigateTo($"/eventsManagerEdit/{Id}");
+
+    // Przenosi użytkownika z powrotem do listy eventów
+    private void BackToList() => Navigation.NavigateTo("/eventsManager");
+    
+    // Pokazuje popup z potwierdzeniem usunięcia
+    private void ShowConfirmPopup()
+    {
+        showConfirmPopup = true;
+    }
+
+    // Ukrywa popup z potwierdzeniem usunięcia
+    private void HideConfirmPopup()
+    {
+        showConfirmPopup = false;
+    }
+
+    // Usuwa event z bazy danych, jeśli obiekt został poprawnie pobrany
+    // Po usunięciu następuje powrót do listy
+    private async Task DeleteEventAsync()
+    {
+        if (ev != null)
+        {
+            await EventService.DeleteEventAsync(ev.EVENT_ID);
+            Navigation.NavigateTo("/eventsManager");
+        }
+    }
+}

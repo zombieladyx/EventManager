@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Pages\Events\Admin\" />
+    <Folder Include="Components\Pages\DefaultUser\statute\" />
   </ItemGroup>
 
 </Project>
