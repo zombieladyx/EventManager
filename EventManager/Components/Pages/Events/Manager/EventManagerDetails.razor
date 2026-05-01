@@ -4,6 +4,7 @@
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 @* Jeśli dane eventu jeszcze się nie załadowały, pokazujemy komunikat *@
 @if (ev == null)
@@ -52,15 +53,15 @@ else
             <button class="btn btn-warning me-2" @onclick="EditEvent">Edytuj</button>
 
             @* Przycisk do usunięcia eventu *@
-            <button class="btn btn-danger" @onclick="DeleteEvent">Usuń</button>
+            <button class="btn btn-danger" @onclick="ConfirmDelete">Usuń</button>
 
             @* Przycisk powrotu do listy wszystkich eventów *@
             <button class="btn btn-secondary me-2" @onclick="BackToList">Powrót do listy</button>
         </div>
     </div>
 }
-
 @code {
+
     // Parametr pobierany z adresu URL, identyfikujący konkretny event
     [Parameter] public string Id { get; set; } = string.Empty;
 
@@ -98,9 +99,21 @@ else
     // Przenosi użytkownika z powrotem do listy eventów
     private void BackToList() => Navigation.NavigateTo("/eventsManager");
     
+    private async Task ConfirmDelete()
+    {
+        var confirm = await JS.InvokeAsync<bool>(
+            "confirm",
+            "Czy na pewno chcesz usunąć ten element?"
+        );
+
+        if (confirm)
+        {
+            await DeleteEventAsync();
+        }
+    }
     // Usuwa event z bazy danych, jeśli obiekt został poprawnie pobrany
     // Po usunięciu następuje powrót do listy
-    private async Task DeleteEvent()
+    private async Task DeleteEventAsync()
     {
         if (ev != null)
         {

@@ -35,12 +35,22 @@ namespace EventManager.Data
         // Usuwa event z bazy danych na podstawie identyfikatora
         public async Task DeleteEventAsync(string id)
         {
-            var ev = await GetEventAsync(id);
+            var eventUsers = await _context.User_Event
+                .Where(eu => eu.EVENT_ID == id)
+                .ToListAsync();
+
+            if (eventUsers.Any())
+            {
+                _context.User_Event.RemoveRange(eventUsers);
+            }
+
+            var ev = await _context.Events.FindAsync(id);
             if (ev != null)
             {
                 _context.Events.Remove(ev);
-                await _context.SaveChangesAsync();
             }
+
+            await _context.SaveChangesAsync();
         }
 
         // Dodaje powiązanie użytkownika z eventem, jeśli jeszcze nie istnieje
