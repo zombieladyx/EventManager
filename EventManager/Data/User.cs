@@ -12,5 +12,6 @@ public partial class User
     public string Password { get; set; } = null!;
 
     public string Role { get; set; } = null!;
+    public string TERMS_ACCEPTED { get; set; } = "NO";
     public ICollection<User_Event> EventUsers { get; set; } = new List<User_Event>();
 }

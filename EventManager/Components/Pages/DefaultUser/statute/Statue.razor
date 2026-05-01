@@ -1,0 +1,93 @@
+﻿@page "/statute"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+@* Strona z regulaminem dla zwykłego użytkownika *@
+<h3>Terms and Conditions</h3>
+
+<div class="terms-container">
+    @* Krótki opis informujący użytkownika, po co jest ta strona *@
+    <p>
+        By using this application, you agree to follow the terms and conditions below.
+    </p>
+
+    @* Lista punktów regulaminu *@
+    <ol>
+        <li>The user may use the application only for lawful purposes.</li>
+        <li>It is forbidden to abuse the event registration system.</li>
+        <li>The user must not provide false data during registration.</li>
+        <li>The administrator has the right to remove an account in case of rule violation.</li>
+        <li>The user agrees that event-related data may be processed to support the application.</li>
+    </ol>
+
+    @* Checkbox potwierdzający akceptację regulaminu *@
+    <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" id="acceptTerms" @bind="isAccepted" />
+        <label class="form-check-label" for="acceptTerms">
+            I accept the terms and conditions and want to proceed to the events list.
+        </label>
+    </div>
+
+    @* Przycisk zapisu akceptacji do bazy *@
+    <div class="mt-4">
+        <button class="btn btn-primary" @onclick="SaveAcceptance" disabled="@isSaving">
+            Accept and Continue
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-info mt-3">
+            @message
+        </div>
+    }
+</div>
+
+@code {
+    // Flaga określająca, czy użytkownik zaznaczył akceptację regulaminu.
+    private bool isAccepted = false;
+
+    // Komunikat informacyjny dla użytkownika.
+    private string message = string.Empty;
+
+    // Flaga blokująca ponowne kliknięcie podczas zapisu.
+    private bool isSaving = false;
+    @* Email aktualnie zalogowanego użytkownika pobrany z UserService *@
+    private string currentUserId = string.Empty;
+
+    @* Pobranie danych eventu oraz sprawdzenie, czy użytkownik już dołączył *@
+    protected override async Task OnInitializedAsync()
+    {
+        @* Pobranie emaila zalogowanego użytkownika z danych autentykacji *@
+        currentUserId = UserService.GetEmail();
+    }
+
+    // Zapisuje akceptację regulaminu do bazy danych.
+    private async Task SaveAcceptance()
+    {
+        if (!isAccepted)
+        {
+            message = "You must accept the terms and conditions to continue.";
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+
+            // Tutaj należy pobrać aktualnego użytkownika i ustawić pole TERMS_ACCEPTED na "YES".
+            // Przykład zależy od Twojej struktury aplikacji i sposobu identyfikacji zalogowanego usera.
+            await UserService.UpdateTermsAcceptanceAsync(currentUserId, "YES");
+
+            message = "Terms accepted successfully.";
+            Navigation.NavigateTo("/events");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
