@@ -1,0 +1,124 @@
+﻿@page "/admin/users"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+@* Nagłówek strony panelu administracyjnego *@
+<h3>Admin Panel - Users</h3>
+
+@* Wyświetlanie komunikatu podczas ładowania danych *@
+@if (users == null)
+{
+    <p>Loading users...</p>
+}
+@* Komunikat, gdy nie znaleziono żadnych użytkowników *@
+else if (users.Count == 0)
+{
+    <div class="alert alert-info">No users found.</div>
+}
+@* Tabela z listą użytkowników *@
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Pętla wyświetlająca wszystkich użytkowników *@
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>
+                        @* Przycisk otwierający okno potwierdzenia usunięcia *@
+                        <button class="btn btn-danger btn-sm" @onclick="() => ShowDeletePopup(user.Email)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@* Popup potwierdzający usunięcie użytkownika *@
+@if (showDeletePopup)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            @* Górna część okna popup *@
+            <div class="popup-header">
+                <div class="popup-title-wrap">
+                    <span class="popup-icon">❌</span>
+                    <span class="popup-title">Delete User</span>
+                </div>
+                @* Przyciski zamknięcia okna *@
+                <button type="button" class="popup-close" @onclick="HideDeletePopup">×</button>
+            </div>
+
+            @* Treść popupu z informacją o usuwanym użytkowniku *@
+            <div class="popup-body">
+                <p>Are you sure you want to delete this user?</p>
+                <p><strong>@selectedUserEmail</strong></p>
+            </div>
+
+            @* Przyciski akcji w popupie *@
+            <div class="popup-footer">
+                <button class="btn btn-outline-secondary" @onclick="HideDeletePopup">Cancel</button>
+                <button class="btn btn-danger" @onclick="ConfirmDeleteUser">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Lista wszystkich użytkowników pobranych z bazy danych.
+    private List<User>? users;
+
+    // Flaga określająca, czy popup usuwania ma być widoczny.
+    private bool showDeletePopup = false;
+
+    // E-mail użytkownika zaznaczonego do usunięcia.
+    private string selectedUserEmail = string.Empty;
+
+    // Metoda wywoływana podczas inicjalizacji komponentu.
+    // Pobiera listę użytkowników z serwisu.
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserService.GetUsersAsync();
+    }
+
+    // Otwiera popup usuwania i zapisuje e-mail wybranego użytkownika.
+    private void ShowDeletePopup(string email)
+    {
+        selectedUserEmail = email;
+        showDeletePopup = true;
+    }
+
+    // Zamyka popup i czyści zapisany e-mail użytkownika.
+    private void HideDeletePopup()
+    {
+        showDeletePopup = false;
+        selectedUserEmail = string.Empty;
+    }
+
+    // Potwierdza usunięcie użytkownika z bazy danych.
+    // Po usunięciu odświeża listę użytkowników.
+    private async Task ConfirmDeleteUser()
+    {
+        if (!string.IsNullOrWhiteSpace(selectedUserEmail))
+        {
+            await UserService.DeleteUserAsync(selectedUserEmail);
+            users = await UserService.GetUsersAsync();
+            HideDeletePopup();
+        }
+    }
+}
