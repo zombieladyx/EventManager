@@ -1,0 +1,156 @@
+﻿@page "/statute"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+@* Nagłówek strony z regulaminem *@
+<h3>Terms and Conditions</h3>
+
+@* Jeżeli dane jeszcze się ładują, pokazujemy komunikat o ładowaniu *@
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="terms-container">
+        @* Krótki opis wyjaśniający użytkownikowi cel strony *@
+        <p>
+            By using this application, you agree to follow the terms and conditions below.
+        </p>
+
+        @* Lista zasad, które użytkownik musi zaakceptować, aby korzystać z aplikacji *@
+        <ol>
+            <li>The user may use the application only for lawful purposes.</li>
+            <li>It is forbidden to abuse the event registration system.</li>
+            <li>The user must not provide false data during registration.</li>
+            <li>The administrator has the right to remove an account in case of rule violation.</li>
+            <li>The user agrees that event-related data may be processed to support the application.</li>
+        </ol>
+
+        @* Jeśli regulamin został już wcześniej zaakceptowany, pokazujemy tylko komunikat *@
+        @if (alreadyAccepted)
+        {
+            <div class="alert alert-success mt-4">
+                You have already accepted the terms and conditions.
+            </div>
+        }
+        else
+        {
+            @* Checkbox, którym użytkownik zaznacza akceptację regulaminu *@
+            <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" id="acceptTerms" @bind="isAccepted" />
+                <label class="form-check-label" for="acceptTerms">
+                    I accept the terms and conditions and want to proceed to the events list.
+                </label>
+            </div>
+
+            @* Przycisk zapisujący akceptację regulaminu do bazy danych *@
+            <div class="mt-4">
+                <button class="btn btn-primary" @onclick="SaveAcceptance" disabled="@isSaving">
+                    Accept and Continue
+                </button>
+            </div>
+        }
+
+        @* Komunikat informacyjny lub błędu, jeśli został ustawiony *@
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert alert-info mt-3">
+                @message
+            </div>
+        }
+    </div>
+}
+
+@code {
+    // Flaga przechowująca stan checkboxa, czyli czy użytkownik zaznaczył akceptację regulaminu.
+    private bool isAccepted = false;
+
+    // Flaga informująca, czy aktualny użytkownik ma już zapisane zaakceptowanie regulaminu w bazie.
+    private bool alreadyAccepted = false;
+
+    // Flaga odpowiedzialna za stan ładowania strony.
+    // Dopóki dane nie zostaną pobrane z serwisu, widok pokazuje komunikat "Loading...".
+    private bool isLoading = true;
+
+    // Flaga blokująca wielokrotne kliknięcie przycisku podczas zapisywania danych do bazy.
+    private bool isSaving = false;
+
+    // Zmienna przechowująca komunikat dla użytkownika, np. o błędzie albo o poprawnym zapisie.
+    private string message = string.Empty;
+
+    // E-mail aktualnie zalogowanego użytkownika pobrany z serwisu.
+    // Na podstawie tej wartości sprawdzamy w bazie, czy ten konkretny user zaakceptował regulamin.
+    private string currentUserId = string.Empty;
+
+    // Metoda wykonywana podczas inicjalizacji komponentu.
+    // Pobiera e-mail zalogowanego użytkownika i sprawdza, czy regulamin został już zaakceptowany.
+    protected override async Task OnInitializedAsync()
+    {
+        // Pobranie adresu e-mail aktualnie zalogowanego użytkownika.
+        // Jest to identyfikator potrzebny do odczytu danych o regulaminie z bazy.
+        currentUserId = UserService.GetEmail();
+
+        // Jeśli nie udało się pobrać e-maila, nie można sprawdzić stanu akceptacji.
+        // W takiej sytuacji ustawiamy komunikat i kończymy inicjalizację.
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            message = "Unable to identify the current user.";
+            isLoading = false;
+            return;
+        }
+
+        // Pobranie z bazy wartości pola TERMS_ACCEPTED dla aktualnego użytkownika.
+        // Dzięki temu wiemy, czy user już wcześniej zaakceptował regulamin.
+        var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
+
+        // Sprawdzenie, czy wartość w bazie oznacza akceptację regulaminu.
+        // Jeśli tak, ustawiamy flagę alreadyAccepted na true.
+        alreadyAccepted = termsValue == "YES";
+
+        // Zakończenie stanu ładowania — widok może zostać wyrenderowany.
+        isLoading = false;
+    }
+
+    // Metoda zapisująca akceptację regulaminu do bazy danych.
+    // Uruchamiana po kliknięciu przycisku "Accept and Continue".
+    private async Task SaveAcceptance()
+    {
+        // Jeżeli użytkownik nie zaznaczył checkboxa, nie pozwalamy zapisać zgody.
+        if (!isAccepted)
+        {
+            message = "You must accept the terms and conditions to continue.";
+            return;
+        }
+
+        // Ponowna kontrola, czy znamy aktualnego użytkownika.
+        // Bez tego nie wiadomo, do którego rekordu w bazie zapisać zgodę.
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            message = "Unable to identify the current user.";
+            return;
+        }
+
+        try
+        {
+            // Ustawienie flagi blokującej kolejne kliknięcia podczas wykonywania zapisu.
+            isSaving = true;
+
+            // Aktualizacja pola TERMS_ACCEPTED w bazie danych na wartość "YES".
+            // Dzięki temu przy następnym wejściu na stronę system rozpozna, że regulamin został zaakceptowany.
+            await UserService.UpdateTermsAcceptanceAsync(currentUserId, "YES");
+
+            // Komunikat potwierdzający poprawny zapis akceptacji.
+            message = "Terms accepted successfully.";
+
+        }
+        finally
+        {
+            // Odblokowanie przycisku po zakończeniu operacji zapisu.
+            isSaving = false;
+        }
+    }
+}

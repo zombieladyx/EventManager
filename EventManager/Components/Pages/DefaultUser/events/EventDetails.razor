@@ -90,6 +90,15 @@ else
 
         @* Sprawdzenie, czy użytkownik jest już przypisany do eventu *@
         isJoined = await EventService.IsUserJoined(currentUserId, Id);
+
+        @*Sprawdzenie, czy użytkownik zaakceptował regulamin *@
+        var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
+        if (termsValue != "YES")
+        {
+            // Jeżeli nie zaakceptował, przekierowujemy go do strony z regulaminem, aby mógł to zrobić przed przeglądaniem szczegółów eventu
+            Navigation.NavigateTo("/statute");
+            return;
+        }
     }
 
     @* Zwraca klasę CSS dla badge na podstawie procentu zajętości miejsc *@

@@ -93,5 +93,28 @@ namespace EventManager.Data
             await context.SaveChangesAsync();
         }
 
+        //funkcje związane z regulaminem
+        // Aktualizuje pole TERMS_ACCEPTED w bazie danych.
+        public async Task UpdateTermsAcceptanceAsync(string email, string acceptanceValue)
+        {
+            var user = await context.Users.FindAsync(email);
+
+            // Jeśli użytkownik nie istnieje, przerywamy operację.
+            if (user == null)
+                return;
+
+            // Zapisujemy wartość akceptacji regulaminu, np. "yes" albo "no".
+            user.TERMS_ACCEPTED = acceptanceValue;
+
+            await context.SaveChangesAsync();
+        }
+        // Pobiera wyłącznie wartość pola TERMS_ACCEPTED bez ładowania całego encji.
+        public async Task<string?> GetTermsAcceptanceAsync(string email)
+        {
+            return await context.Users
+                .Where(x => x.Email == email)
+                .Select(x => x.TERMS_ACCEPTED)
+                .FirstOrDefaultAsync();
+        }
     }
 }
