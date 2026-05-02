@@ -3,15 +3,24 @@
 @using EventManager.Data
 @rendermode InteractiveServer
 @inject IEventService EventService
+@inject UserService UserService
 @inject NavigationManager Navigation
 
 @* Nagłówek strony z listą eventów *@
-<h3>Events List</h3>
+<h1>Events List</h1>
 
 @* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
 @if (events == null)
 {
     <p>Loading...</p>
+}
+@* W przypadku nie zaakceptowania regulaminu, wyświetlamy zachętę do jego przeczytania i zaakceptowania, aby móc przeglądać nadchodzące wydarzenia. *@
+else if (!UserTermsAccepted)
+{
+    <h3>Just one more step!</h3>
+    <p>We can't wait to show you what's happening!</p>
+    <p>To browse our upcoming events, please review and accept our Terms of Service and Privacy Policy. 
+        This ensures you have all the necessary information regarding bookings and attendance.</p>
 }
 @* Gdy lista została pobrana, wyświetlamy tabelę *@
 else
@@ -53,10 +62,41 @@ else
 @code {
     @* Lista eventów pobrana z serwisu *@
     private List<Event>? events;
+    @* Flaga sprawdzająca czy użytkownik zaakceptował regulamin, aby móc przeglądać listę eventów. *@
+    private bool UserTermsAccepted = false;
+    @*Zmienna przechowyjąca identyfikator aktualnie zalogowanego użytkownika, potrzebna do sprawdzenia jego stanu akceptacji regulaminu. *@
+    private string currentUserId = string.Empty;
 
-    @* Pobranie wszystkich eventów podczas inicjalizacji komponentu *@
+    @* Pobranie wszystkich eventów oraz sprawdzenie, czy aktualny użytkownik może je oglądać *@
     protected override async Task OnInitializedAsync()
     {
+        // Pobranie pełnej listy eventów z serwisu.
+        // Dane są pobierane asynchronicznie podczas inicjalizacji komponentu,
+        // dzięki czemu strona może później wyświetlić tabelę z wydarzeniami.
         events = await EventService.GetEventsAsync();
+
+        // Pobranie e-maila aktualnie zalogowanego użytkownika.
+        // Ta wartość jest potrzebna, aby sprawdzić w bazie danych,
+        // czy konkretny użytkownik zaakceptował regulamin.
+        currentUserId = UserService.GetEmail();
+
+        // Pobranie z bazy informacji o stanie akceptacji regulaminu
+        // dla aktualnie zalogowanego użytkownika.
+        var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
+
+        // Jeżeli użytkownik wcześniej zaakceptował regulamin,
+        // ustawiamy flagę UserTermsAccepted na true.
+        // Dzięki temu w widoku zostanie wyświetlona lista eventów.
+        if (termsValue == "YES")
+        {
+            UserTermsAccepted = true;
+            return;
+        }
+
+        // Jeśli warunek powyżej nie został spełniony,
+        // oznacza to, że użytkownik nie zaakceptował jeszcze regulaminu.
+        // Flaga pozostaje ustawiona na false, więc widok nie pokaże listy eventów.
+        UserTermsAccepted = false;
     }
+    
 }
