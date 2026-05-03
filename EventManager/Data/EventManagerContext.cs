@@ -27,21 +27,21 @@ public partial class EventManagerContext : DbContext
         //konfiguracja encji Users
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Email).HasName("PK__users__161CF725C0D8FC4C");
+            entity.HasKey(e => e.EMAIL).HasName("PK__users__161CF725C0D8FC4C");
             //nazwa tabeli users
             entity.ToTable("users");
             //kolumna EMAIL
-            entity.Property(e => e.Email)
+            entity.Property(e => e.EMAIL)
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("EMAIL");
             //kolumna PASSWORD
-            entity.Property(e => e.Password)
+            entity.Property(e => e.PASSWORD)
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("PASSWORD");
             //kolumna ROLE
-            entity.Property(e => e.Role)
+            entity.Property(e => e.ROLE)
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("ROLE");
@@ -56,12 +56,12 @@ public partial class EventManagerContext : DbContext
 
         //konfiguracja encji User_Event - klucz złożony z Email i EventId, relacje do User i Event
         modelBuilder.Entity<User_Event>()
-            .HasKey(eu => new { eu.Email, eu.EVENT_ID });
+            .HasKey(eu => new { eu.EMAIL, eu.EVENT_ID });
 
         modelBuilder.Entity<User_Event>()
             .HasOne(eu => eu.User)  
             .WithMany(u => u.EventUsers)
-            .HasForeignKey(eu => eu.Email);
+            .HasForeignKey(eu => eu.EMAIL);
 
         modelBuilder.Entity<User_Event>()
             .HasOne(eu => eu.Event)

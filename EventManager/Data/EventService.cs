@@ -60,7 +60,7 @@ namespace EventManager.Data
             if (!await IsUserJoined(userId, eventId))
             {
                 // Utworzenie rekordu w tabeli pośredniej user-event
-                var eventUser = new User_Event { Email = userId, EVENT_ID = eventId };
+                var eventUser = new User_Event { EMAIL = userId, EVENT_ID = eventId };
                 _context.User_Event.Add(eventUser);
                 await _context.SaveChangesAsync();
 
@@ -79,7 +79,7 @@ namespace EventManager.Data
         {
             // Szukanie rekordu powiązania użytkownika z eventem
             var eventUser = await _context.User_Event
-                .FirstOrDefaultAsync(eu => eu.Email == userId && eu.EVENT_ID == eventId);
+                .FirstOrDefaultAsync(eu => eu.EMAIL == userId && eu.EVENT_ID == eventId);
 
             if (eventUser != null)
             {
@@ -99,7 +99,7 @@ namespace EventManager.Data
 
         // Sprawdza, czy dany użytkownik jest już zapisany na event
         public async Task<bool> IsUserJoined(string userId, string eventId) =>
-            await _context.User_Event.AnyAsync(eu => eu.Email == userId && eu.EVENT_ID == eventId);
+            await _context.User_Event.AnyAsync(eu => eu.EMAIL == userId && eu.EVENT_ID == eventId);
 
         // Pobiera wszystkich użytkowników zapisanych na dany event
         public async Task<List<User>> GetEventUsersAsync(string eventId) =>

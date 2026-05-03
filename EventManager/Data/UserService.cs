@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NETCore.Encrypt;
 using System.Security.Claims;
 namespace EventManager.Data
 {
@@ -21,7 +22,7 @@ namespace EventManager.Data
         public bool SaveUser(User user)
         {
             //sprawdzenie, czy istnieje użytkownik o takim samym emailu
-            bool isExist = context.Users.Any(x => x.Email == user.Email);
+            bool isExist = context.Users.Any(x => x.EMAIL == user.EMAIL);
             //jeśli nie istnieje: dodanie użytkownika do tabeli Users i zapisanie zmian do bazy
             if (!isExist)
             {
@@ -37,21 +38,15 @@ namespace EventManager.Data
         public User? Verify(string email, string password)
         {
             //zaszyfrowania hasła podanego przez użytkownika przy logowaniu
-            string encryptPassword;
-            encryptPassword = Encrypt(password);
+            string hashPassword;
+            hashPassword = EncryptProvider.Sha256(password);
 
             //zwróci użytkownika, jeśli dane są poprawne albo null jeśli nie ma takiego użytkownika
             //porównanie emaila ignoruje wielkość liter, porównanie hasła jest bezpośrednie
-            return context.Users.FirstOrDefault(x => x.Email.ToLower() == email.ToLower()
-                    && x.Password == encryptPassword);
+            return context.Users.FirstOrDefault(x => x.EMAIL.ToLower() == email.ToLower()
+                    && x.PASSWORD == hashPassword);
         }
 
-        //metoda szyfrująca
-        public string Encrypt(string plainText)
-        {
-            string encryptPassword = Eramake.eCryptography.Encrypt(plainText);
-            return encryptPassword;
-        }
 
         // Zwraca email aktualnie zalogowanego użytkownika
         public string GetEmail()
@@ -112,7 +107,7 @@ namespace EventManager.Data
         public async Task<string?> GetTermsAcceptanceAsync(string email)
         {
             return await context.Users
-                .Where(x => x.Email == email)
+                .Where(x => x.EMAIL == email)
                 .Select(x => x.TERMS_ACCEPTED)
                 .FirstOrDefaultAsync();
         }

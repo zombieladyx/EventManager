@@ -36,12 +36,12 @@ else
             @foreach (var user in users)
             {
                 <tr>
-                    <td>@user.Email</td>
-                    <td>@user.Role</td>
+                    <td>@user.EMAIL</td>
+                    <td>@user.ROLE</td>
                     <td>@user.TERMS_ACCEPTED</td>
                     <td>
                         @* Przycisk otwierający okno potwierdzenia usunięcia *@
-                        <button class="btn btn-danger btn-sm" @onclick="() => ShowDeletePopup(user.Email)">
+                        <button class="btn btn-danger btn-sm" @onclick="() => ShowDeletePopup(user.EMAIL)">
                             Delete
                         </button>
                     </td>

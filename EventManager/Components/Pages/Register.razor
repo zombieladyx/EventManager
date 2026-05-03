@@ -2,6 +2,7 @@
 @using EventManager.Components.Shared @*daje dostęp do komponentu Alert*@
 @using EventManager.Data @*daje dostęp do modeli i serwisów, np. User, UserService*@
 @using System.Text.RegularExpressions
+@using NETCore.Encrypt
 
 @*strona dostępna pod adresem /register, wstrzyknięcie serwisu do zapisu użytkownika*@
 @page "/Register" 
@@ -50,22 +51,10 @@
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new(); //przechowuje dane z formularza
 
-    public string Encrypt(string plainText)
-    {
-        string encryptPassword = Eramake.eCryptography.Encrypt(plainText);
-        return encryptPassword;
-    }
-
-    public string Decrypt(string cipher)
-    {
-        string decryptPassword = Eramake.eCryptography.Decrypt(cipher);
-        return decryptPassword;
-    }
-
     //rejestracja użytkowników
     public void RegisterUser()
     {
-        string encryptPassword;
+        string hashPassword;
 
         //wymóg, aby hasło zawierało duże litery i małe litery i cyfry
         if (!(Regex.IsMatch(Input.Password, "[A-Z]") && Regex.IsMatch(Input.Password, "[a-z]") && Regex.IsMatch(Input.Password, "[0-9]")))
@@ -81,16 +70,16 @@
             return;
         }
 
-        encryptPassword = Encrypt(Input.Password);
+        hashPassword = EncryptProvider.Sha256(Input.Password);
 
         //przekazanie obiektuUser do userService.SaveUser
         bool result = userService.SaveUser(
             //utworzenie nowego obiektu User
             new User
                 {
-                    Email = Input.Email,
-                    Password = encryptPassword,
-                    Role = "DefaultUser"
+                    EMAIL = Input.Email,
+                    PASSWORD = hashPassword,
+                    ROLE = "DefaultUser"
                 }
         );
 
