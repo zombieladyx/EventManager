@@ -55,6 +55,12 @@
             return;
         }
 
+        if (user.ACCOUNT_LOCKED == "TRUE")
+        {
+            alert.ShowFailed("Account is locked");
+            return;
+        }
+
         //tworzenie Claims, info wyświetlane później w MainLayout do pokazania zalogowanego użytkownika
         var claims = new List<Claim>
         {
