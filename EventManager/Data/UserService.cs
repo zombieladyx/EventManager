@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NETCore.Encrypt;
 using System.Security.Claims;
+using Microsoft.Data.SqlClient;
 namespace EventManager.Data
 {
     //serwis odpowiedzialny za operacje na użytkownikach
@@ -110,6 +111,18 @@ namespace EventManager.Data
                 .Where(x => x.EMAIL == email)
                 .Select(x => x.TERMS_ACCEPTED)
                 .FirstOrDefaultAsync();
+        }
+
+        //Wywolanie procedury Login_Failed na serwerze SQL
+        public async Task HandleFailedLogin(string email)
+        {
+            await context.Database.ExecuteSqlAsync($"EXEC dbo.Login_Failed @Email = {email}");
+        }
+
+        //Wywolanie procedury Login_Success na serwerze SQL
+        public async Task HandleSuccessLogin(string email)
+        {
+            await context.Database.ExecuteSqlAsync($"EXEC dbo.Login_Success @Email = {email}");
         }
     }
 }

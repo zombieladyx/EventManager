@@ -51,6 +51,7 @@
         //jeśli użytkownik nie istnieje: alert
         if (user is null)
         {
+            userService.HandleFailedLogin(Input.Email);
             alert.ShowFailed("Invalid Email or Password");
             return;
         }
@@ -60,6 +61,8 @@
             alert.ShowFailed("Account is locked");
             return;
         }
+
+        userService.HandleSuccessLogin(Input.Email);
 
         //tworzenie Claims, info wyświetlane później w MainLayout do pokazania zalogowanego użytkownika
         var claims = new List<Claim>
