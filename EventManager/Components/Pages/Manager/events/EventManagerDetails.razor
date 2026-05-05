@@ -6,6 +6,8 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
+@attribute [Authorize(Roles = "Manager")]
+
 @* Jeśli dane eventu jeszcze się nie załadowały, pokazujemy komunikat *@
 @if (ev == null)
 {

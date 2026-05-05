@@ -5,6 +5,8 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 
+@attribute [Authorize(Roles = "Manager")]
+
 @* Nagłówek strony z formularzem dodawania nowego wydarzenia *@
 <h3>Add New Event</h3>
 

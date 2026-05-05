@@ -6,6 +6,8 @@
 @inject NavigationManager Navigation
 @inject UserService UserService
 
+@attribute [Authorize(Roles = "DefaultUser")]
+
 @* Jeśli event jeszcze się ładuje, pokazujemy komunikat informacyjny *@
 @if (ev == null)
 {

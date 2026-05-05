@@ -6,6 +6,8 @@
 @inject UserService UserService
 @inject NavigationManager Navigation
 
+@attribute [Authorize(Roles = "DefaultUser")]
+
 @* Nagłówek strony z listą eventów *@
 <h1>Events List</h1>
 

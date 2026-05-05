@@ -1,8 +1,11 @@
 ﻿@page "/eventsManagerEdit/{Id}"
 @using EventManager.Data
+@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+
+@attribute [Authorize(Roles = "Manager")]
 
 @* Nagłówek strony z formularzem edycji wydarzenia *@
 <h3>Edit Event</h3>

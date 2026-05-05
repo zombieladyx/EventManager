@@ -5,6 +5,8 @@
 @inject UserService UserService
 @inject NavigationManager Navigation
 
+@attribute [Authorize(Roles = "DefaultUser")]
+
 @* Nagłówek strony z regulaminem *@
 <h3>Terms and Conditions</h3>
 
