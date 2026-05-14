@@ -1,7 +1,65 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+@using EventManager.Data
+@rendermode InteractiveServer
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+@* @attribute [Authorize(Roles = "DefaultUser,Manager")] *@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+@* Strona tytułowa / landing page aplikacji *@
+<header class="hero">
+    <div class="container hero-inner">
+        @* Główny tytuł aplikacji *@
+        <h1 class="hero-title">EventManager</h1>
 
-Welcome to your new app.
+        @* Krótki podtytuł wyjaśniający, co robi aplikacja *@
+        <p class="hero-subtitle">
+            Discover, register and manage events near you — easily and reliably.
+        </p>
+    </div>
+</header>
+
+@* Sekcja z 4 kluczowymi zaletami aplikacji *@
+<section class="features container">
+    <div class="feature">
+        <h3>Find events fast</h3>
+        <p>Search upcoming events</p>
+    </div>
+    <div class="feature">
+        <h3>Easy booking</h3>
+        <p>Reserve your seat in a few clicks.</p>
+    </div>
+    <div class="feature">
+        <h3>Manage attendees</h3>
+        <p>Organize participants, view attendee lists and export reports.</p>
+    </div>
+    <div class="feature">
+        <h3>Multilingual support</h3>
+        <p>Translate event titles, descriptions and UI messages into multiple languages on demand, powered by Azure Translator.</p>
+    </div>
+</section>
+
+@* Krótkie CTA z widocznym przyciskiem *@
+<section class="cta container">
+    <h2>Ready to explore?</h2>
+    <p>Sign in to manage your bookings or browse public events.</p>
+    <button class="btn btn-lg btn-success" @onclick="GoToEvents">Get Started</button>
+</section>
+
+@* Prosta stopka z informacją o prawach autorskich *@
+<footer class="site-footer">
+    <div class="container">
+        <small>© @DateTime.Now.Year EventManager. All rights reserved.</small>
+    </div>
+</footer>
+
+@code {
+    // Przekierowanie do listy eventów.
+    private void GoToEvents()
+    {
+        Navigation.NavigateTo("/events");
+    }
+}

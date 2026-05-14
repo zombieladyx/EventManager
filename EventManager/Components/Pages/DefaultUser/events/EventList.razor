@@ -23,6 +23,8 @@ else if (!UserTermsAccepted)
     <p>We can't wait to show you what's happening!</p>
     <p>To browse our upcoming events, please review and accept our Terms of Service and Privacy Policy. 
         This ensures you have all the necessary information regarding bookings and attendance.</p>
+
+    <button class="btn btn-primary" @onclick="GoToStatute">Review and Accept Terms</button>
 }
 @* Gdy lista została pobrana, wyświetlamy tabelę *@
 else
@@ -101,4 +103,8 @@ else
         UserTermsAccepted = false;
     }
     
+    private void GoToStatute()
+    {
+        Navigation.NavigateTo("/statute");
+    }
 }
