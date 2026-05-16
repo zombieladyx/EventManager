@@ -1,3 +1,40 @@
 ﻿@page "/accessdenied"
+@using EventManager.Data
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
-<h1 style="color:red;">ACCESS DENIED</h1>
+<h1 style="color:red;">@t_AccessDenied</h1>
+
+@code {
+    private const string Orig_AccessDenied = "Access Denied";
+
+    private string t_AccessDenied = Orig_AccessDenied;
+
+    protected override void OnInitialized()
+    {
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+        _ = TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        if (lang == "en")
+        {
+            t_AccessDenied = Orig_AccessDenied;
+            return;
+        }
+
+        t_AccessDenied = await Translator.TranslateAsync(Orig_AccessDenied, "en", lang);
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
+    }
+}

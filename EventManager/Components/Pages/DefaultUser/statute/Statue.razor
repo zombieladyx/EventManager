@@ -4,39 +4,39 @@
 @rendermode InteractiveServer
 @inject UserService UserService
 @inject NavigationManager Navigation
+@inject TranslatorService TranslatorService
+@inject LanguageStateService LanguageState
 
 @attribute [Authorize(Roles = "DefaultUser")]
+@implements IDisposable
 
 @* Nagłówek strony z regulaminem *@
-<h3>Terms and Conditions</h3>
+<h3>@titleText</h3>
 
 @* Jeżeli dane jeszcze się ładują, pokazujemy komunikat o ładowaniu *@
 @if (isLoading)
 {
-    <p>Loading...</p>
+    <p>@loadingText</p>
 }
 else
 {
     <div class="terms-container">
         @* Krótki opis wyjaśniający użytkownikowi cel strony *@
-        <p>
-            By using this application, you agree to follow the terms and conditions below.
-        </p>
+        <p>@introText</p>
 
         @* Lista zasad, które użytkownik musi zaakceptować, aby korzystać z aplikacji *@
         <ol>
-            <li>The user may use the application only for lawful purposes.</li>
-            <li>It is forbidden to abuse the event registration system.</li>
-            <li>The user must not provide false data during registration.</li>
-            <li>The administrator has the right to remove an account in case of rule violation.</li>
-            <li>The user agrees that event-related data may be processed to support the application.</li>
+            @foreach (var item in termsItems)
+            {
+                <li>@item</li>
+            }
         </ol>
 
         @* Jeśli regulamin został już wcześniej zaakceptowany, pokazujemy tylko komunikat *@
         @if (alreadyAccepted)
         {
             <div class="alert alert-success mt-4">
-                You have already accepted the terms and conditions.
+                @alreadyAcceptedText
             </div>
         }
         else
@@ -45,14 +45,14 @@ else
             <div class="form-check mt-4">
                 <input class="form-check-input" type="checkbox" id="acceptTerms" @bind="isAccepted" />
                 <label class="form-check-label" for="acceptTerms">
-                    I accept the terms and conditions and want to proceed to the events list.
+                    @acceptLabelText
                 </label>
             </div>
 
             @* Przycisk zapisujący akceptację regulaminu do bazy danych *@
             <div class="mt-4">
                 <button class="btn btn-primary" @onclick="SaveAcceptance" disabled="@isSaving">
-                    Accept and Continue
+                    @acceptButtonText
                 </button>
             </div>
         }
@@ -75,29 +75,60 @@ else
     private bool alreadyAccepted = false;
 
     // Flaga odpowiedzialna za stan ładowania strony.
-    // Dopóki dane nie zostaną pobrane z serwisu, widok pokazuje komunikat "Loading...".
+    // Dopóki dane nie zostaną pobrane z serwisu, widok pokazuje komunikat o ładowaniu.
     private bool isLoading = true;
 
     // Flaga blokująca wielokrotne kliknięcie przycisku podczas zapisywania danych do bazy.
     private bool isSaving = false;
 
-    // Zmienna przechowująca komunikat dla użytkownika, np. o błędzie albo o poprawnym zapisie.
+    // Zmienna przechowująca komunikat dla użytkownika.
     private string message = string.Empty;
 
     // E-mail aktualnie zalogowanego użytkownika pobrany z serwisu.
     // Na podstawie tej wartości sprawdzamy w bazie, czy ten konkretny user zaakceptował regulamin.
     private string currentUserId = string.Empty;
 
+    // Tekst nagłówka strony.
+    private string titleText = "Terms and Conditions";
+
+    // Tekst wyświetlany podczas ładowania strony.
+    private string loadingText = "Loading...";
+
+    // Tekst wstępu do regulaminu.
+    private string introText = "By using this application, you agree to follow the terms and conditions below.";
+
+    // Komunikat wyświetlany, gdy użytkownik już wcześniej zaakceptował regulamin.
+    private string alreadyAcceptedText = "You have already accepted the terms and conditions.";
+
+    // Tekst etykiety checkboxa akceptacji regulaminu.
+    private string acceptLabelText = "I accept the terms and conditions and want to proceed to the events list.";
+
+    // Tekst przycisku zapisu akceptacji.
+    private string acceptButtonText = "Accept and Continue";
+
+    // Lista punktów regulaminu, które będą wyświetlane użytkownikowi.
+    private List<string> termsItems = new()
+    {
+        "The user may use the application only for lawful purposes.",
+        "It is forbidden to abuse the event registration system.",
+        "The user must not provide false data during registration.",
+        "The administrator has the right to remove an account in case of rule violation.",
+        "The user agrees that event-related data may be processed to support the application."
+    };
+
     // Metoda wykonywana podczas inicjalizacji komponentu.
-    // Pobiera e-mail zalogowanego użytkownika i sprawdza, czy regulamin został już zaakceptowany.
+    // Pobiera e-mail zalogowanego użytkownika, sprawdza akceptację regulaminu
+    // oraz wykonuje pierwsze tłumaczenie treści na aktualnie wybrany język.
     protected override async Task OnInitializedAsync()
     {
+        // Subskrypcja zdarzenia zmiany języka.
+        // Dzięki temu komponent automatycznie odświeży treść po zmianie języka w MainLayout.
+        LanguageState.OnLanguageChanged += HandleLanguageChanged;
+
         // Pobranie adresu e-mail aktualnie zalogowanego użytkownika.
-        // Jest to identyfikator potrzebny do odczytu danych o regulaminie z bazy.
         currentUserId = UserService.GetEmail();
 
         // Jeśli nie udało się pobrać e-maila, nie można sprawdzić stanu akceptacji.
-        // W takiej sytuacji ustawiamy komunikat i kończymy inicjalizację.
         if (string.IsNullOrWhiteSpace(currentUserId))
         {
             message = "Unable to identify the current user.";
@@ -109,12 +140,63 @@ else
         // Dzięki temu wiemy, czy user już wcześniej zaakceptował regulamin.
         var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
 
-        // Sprawdzenie, czy wartość w bazie oznacza akceptację regulaminu.
-        // Jeśli tak, ustawiamy flagę alreadyAccepted na true.
+        // Sprawdzenie, czy regulamin został już zaakceptowany.
         alreadyAccepted = termsValue == "YES";
+
+        // Wykonanie pierwszego tłumaczenia całej zawartości strony na aktualny język.
+        await TranslateAllAsync();
 
         // Zakończenie stanu ładowania — widok może zostać wyrenderowany.
         isLoading = false;
+    }
+
+    // Metoda wywoływana automatycznie po zmianie języka w MainLayout.
+    // Tłumaczy wszystkie teksty strony na nowy język i odświeża widok.
+    private async void HandleLanguageChanged()
+    {
+        await TranslateAllAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Tłumaczy wszystkie teksty widoczne na stronie na język wybrany przez użytkownika.
+    private async Task TranslateAllAsync()
+    {
+        // Język źródłowy treści zapisanych w kodzie.
+        var sourceLanguage = "en";
+
+        // Język docelowy pobierany z globalnego stanu aplikacji.
+        var targetLanguage = LanguageState.CurrentLanguage;
+
+        // Tłumaczenie tekstów statycznych strony.
+        titleText = await TranslatorService.TranslateAsync("Terms and Conditions", sourceLanguage, targetLanguage);
+        loadingText = await TranslatorService.TranslateAsync("Loading...", sourceLanguage, targetLanguage);
+        introText = await TranslatorService.TranslateAsync("By using this application, you agree to follow the terms and conditions below.", sourceLanguage, targetLanguage);
+        alreadyAcceptedText = await TranslatorService.TranslateAsync("You have already accepted the terms and conditions.", sourceLanguage, targetLanguage);
+        acceptLabelText = await TranslatorService.TranslateAsync("I accept the terms and conditions and want to proceed to the events list.", sourceLanguage, targetLanguage);
+        acceptButtonText = await TranslatorService.TranslateAsync("Accept and Continue", sourceLanguage, targetLanguage);
+
+        // Tłumaczenie wszystkich punktów regulaminu z listy.
+        var translatedItems = new List<string>();
+
+        foreach (var item in new[]
+        {
+            "The user may use the application only for lawful purposes.",
+            "It is forbidden to abuse the event registration system.",
+            "The user must not provide false data during registration.",
+            "The administrator has the right to remove an account in case of rule violation.",
+            "The user agrees that event-related data may be processed to support the application."
+        })
+        {
+            translatedItems.Add(await TranslatorService.TranslateAsync(item, sourceLanguage, targetLanguage));
+        }
+
+        termsItems = translatedItems;
+
+        // Jeśli komunikat jest ustawiony, tłumaczymy go również na wybrany język.
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            message = await TranslatorService.TranslateAsync(message, sourceLanguage, targetLanguage);
+        }
     }
 
     // Metoda zapisująca akceptację regulaminu do bazy danych.
@@ -124,7 +206,10 @@ else
         // Jeżeli użytkownik nie zaznaczył checkboxa, nie pozwalamy zapisać zgody.
         if (!isAccepted)
         {
-            message = "You must accept the terms and conditions to continue.";
+            message = await TranslatorService.TranslateAsync(
+                "You must accept the terms and conditions to continue.",
+                "en",
+                LanguageState.CurrentLanguage);
             return;
         }
 
@@ -132,7 +217,10 @@ else
         // Bez tego nie wiadomo, do którego rekordu w bazie zapisać zgodę.
         if (string.IsNullOrWhiteSpace(currentUserId))
         {
-            message = "Unable to identify the current user.";
+            message = await TranslatorService.TranslateAsync(
+                "Unable to identify the current user.",
+                "en",
+                LanguageState.CurrentLanguage);
             return;
         }
 
@@ -146,13 +234,24 @@ else
             await UserService.UpdateTermsAcceptanceAsync(currentUserId, "YES");
 
             // Komunikat potwierdzający poprawny zapis akceptacji.
-            message = "Terms accepted successfully.";
+            message = await TranslatorService.TranslateAsync(
+                "Terms accepted successfully.",
+                "en",
+                LanguageState.CurrentLanguage);
 
+            // Ustawienie flagi, że regulamin jest już zaakceptowany również w aktualnym widoku.
+            alreadyAccepted = true;
         }
         finally
         {
             // Odblokowanie przycisku po zakończeniu operacji zapisu.
             isSaving = false;
         }
+    }
+
+    // Czyszczenie subskrypcji zdarzenia, aby uniknąć wycieków pamięci.
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= HandleLanguageChanged;
     }
 }

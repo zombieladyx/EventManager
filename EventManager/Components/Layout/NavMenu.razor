@@ -1,8 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
+@using EventManager.Data
+
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @*nagłówek menu*@
-<div class="top-row ps-3 navbar navbar-dark"> @*ciemne tło*@
+<div class="top-row ps-3 navbar navbar-dark">
+    @*ciemne tło*@
     <div class="container-fluid">
         <a class="navbar-brand" href="">EventManager</a> @*link do strony głównej*@
     </div>
@@ -13,33 +18,15 @@
 
 @*główna sekcja menu*@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    @*lista linków, menu pionowe*@
     <nav class="nav flex-column">
         @*link do strony głównej*@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @t_Home
             </NavLink>
         </div>
 
         <CascadingAuthenticationState>
-            <!--
-            @*widoczne tylko dla niezalogowanych*@
-            <AuthorizeView>
-                <NotAuthorized>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="login">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Login
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="register">
-                            <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Register
-                        </NavLink>
-                    </div>
-                </NotAuthorized>
-            </AuthorizeView>
-            -->
             @*widoczne tylko dla użytkownika Manager*@
             <AuthorizeView Roles="Manager">
                 <div class="nav-item px-3">
@@ -48,10 +35,11 @@
                             <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />
                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
                         </svg>
-                        Event list
+                        @t_EventList
                     </NavLink>
                 </div>
             </AuthorizeView>
+
             @*widoczne tylko dla użytkownika DefaultUser*@
             <AuthorizeView Roles="DefaultUser">
                 <div class="nav-item px-3">
@@ -59,17 +47,18 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                             <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z" />
                             <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
-                        </svg> Statute
+                        </svg>
+                        @t_Statute
                     </NavLink>
                 </div>
-                @* strona z listą eventów jest dostępna dla wszystkich zalogowanych użytkowników *@
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="events">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16">
                             <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />
                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
                         </svg>
-                        Event list
+                        @t_EventList
                     </NavLink>
                 </div>
             </AuthorizeView>
@@ -77,3 +66,55 @@
     </nav>
 </div>
 
+@code {
+    // Oryginalne teksty w języku angielskim — źródło dla tłumacza
+    private const string Original_Home = "Home";
+    private const string Original_EventList = "Event list";
+    private const string Original_Statute = "Statute";
+
+    // Aktualne teksty wyświetlane w UI — zmieniane po tłumaczeniu
+    private string t_Home = Original_Home;
+    private string t_EventList = Original_EventList;
+    private string t_Statute = Original_Statute;
+
+    protected override void OnInitialized()
+    {
+        // Subskrypcja zmiany języka — gdy user zmieni język w MainLayout,
+        // NavMenu automatycznie przetłumaczy swoje teksty
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string targetLang)
+    {
+        // Jeśli angielski — przywróć oryginalne teksty bez wywołania API
+        if (targetLang == "en")
+        {
+            t_Home = Original_Home;
+            t_EventList = Original_EventList;
+            t_Statute = Original_Statute;
+            return;
+        }
+
+        // Tłumaczenie wszystkich tekstów równolegle — szybciej niż po kolei
+        var results = await Task.WhenAll(
+            Translator.TranslateAsync(Original_Home, "en", targetLang),
+            Translator.TranslateAsync(Original_EventList, "en", targetLang),
+            Translator.TranslateAsync(Original_Statute, "en", targetLang)
+        );
+
+        t_Home = results[0];
+        t_EventList = results[1];
+        t_Statute = results[2];
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
+    }
+}

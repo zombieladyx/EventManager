@@ -1,44 +1,39 @@
-﻿@using System.ComponentModel.DataAnnotations @*potrzebny do walidacji*@ 
+﻿@using System.ComponentModel.DataAnnotations @*potrzebny do walidacji*@
 @using EventManager.Components.Shared @*daje dostęp do komponentu Alert*@
 @using EventManager.Data @*daje dostęp do modeli i serwisów, np. User, UserService*@
 @using System.Text.RegularExpressions
 @using NETCore.Encrypt
 
 @*strona dostępna pod adresem /register, wstrzyknięcie serwisu do zapisu użytkownika*@
-@page "/Register" 
+@page "/Register"
 @inject UserService userService
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 @rendermode InteractiveServer
 
-<h1>Register</h1> @*nagłówek*@
+<h1>@t_Title</h1> @*nagłówek*@
 <div class="row">
     <div class="col-md-4">
         <Alert @ref="alert" /> @*referencja do komponentu Alert*@
         <section>
-            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="Register"> @*powiązanie z klasą InputModel, metoda wywoła się tylko, jeśli walidacja przejdzie*@
+            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="Register">
+                @*powiązanie z klasą InputModel, metoda wywoła się tylko, jeśli walidacja przejdzie*@
                 <DataAnnotationsValidator /> @*włącza walidację opartą na [Required] itp.*@
                 <hr />
-                <div class="form-floating mb-3"> @*pole email, binding emaila, jeśli jest pusty, walidacje pokaże błąd*@
-                    <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" /> 
-                    <label for="email" class="form-label">Email</label>
+                <div class="form-floating mb-3">
+                    @*pole email*@
+                    <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" />
+                    <label for="email" class="form-label">@t_Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
-                <div class="form-floating mb-3"> @*pole hasło, binding hasła, jeśli jest puste, walidacje pokaże błąd*@
+                <div class="form-floating mb-3">
+                    @*pole hasło*@
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" aria-required="true" />
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">@t_Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
-                <!--
-                <div class="form-floating mb-3"> @*pole rola, użytkownik wybiera swoją rolę*@
-                    <InputSelect class="form-select" @bind-Value="Input.Role" aria-required="true">
-                        <option value="Admin">Admin</option>
-                        <option value="DefaultUser">Default User</option>
-                    </InputSelect>
-                    <label for="role" class="form-label">Role</label>
-                    <ValidationMessage For="() => Input.Role" class="text-danger" />
-                </div>
-                -->
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button> @*przycisk do przesłania danych*@
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">@t_RegisterButton</button> @*przycisk do przesłania danych*@
                 </div>
             </EditForm>
         </section>
@@ -46,68 +41,140 @@
 </div>
 
 @code {
-    private Alert alert; //referencja do Alert
+    private Alert alert = default!; // referencja do Alert
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new(); //przechowuje dane z formularza
+    private InputModel Input { get; set; } = new(); // przechowuje dane z formularza
 
-    //rejestracja użytkowników
+    // Oryginalne teksty angielskie
+    private const string Orig_Title = "Register";
+    private const string Orig_Email = "Email";
+    private const string Orig_Password = "Password";
+    private const string Orig_RegisterButton = "Register";
+    private const string Orig_PassUpperLower = "Password must contain uppercase letters, lowercase letters and numbers";
+    private const string Orig_PassLength = "Password must be at least 8 characters long";
+    private const string Orig_Success = "Register Successfully";
+    private const string Orig_Failed = "Register Failed";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Title = Orig_Title;
+    private string t_Email = Orig_Email;
+    private string t_Password = Orig_Password;
+    private string t_RegisterButton = Orig_RegisterButton;
+    private string t_PassUpperLower = Orig_PassUpperLower;
+    private string t_PassLength = Orig_PassLength;
+    private string t_Success = Orig_Success;
+    private string t_Failed = Orig_Failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Natychmiastowe tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        // Angielski to oryginał — przywróć bez wywołania API
+        if (lang == "en")
+        {
+            t_Title = Orig_Title;
+            t_Email = Orig_Email;
+            t_Password = Orig_Password;
+            t_RegisterButton = Orig_RegisterButton;
+            t_PassUpperLower = Orig_PassUpperLower;
+            t_PassLength = Orig_PassLength;
+            t_Success = Orig_Success;
+            t_Failed = Orig_Failed;
+            return;
+        }
+
+        // Wszystkie teksty tłumaczone równolegle
+        var results = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_Title, "en", lang),
+            Translator.TranslateAsync(Orig_Email, "en", lang),
+            Translator.TranslateAsync(Orig_Password, "en", lang),
+            Translator.TranslateAsync(Orig_RegisterButton, "en", lang),
+            Translator.TranslateAsync(Orig_PassUpperLower, "en", lang),
+            Translator.TranslateAsync(Orig_PassLength, "en", lang),
+            Translator.TranslateAsync(Orig_Success, "en", lang),
+            Translator.TranslateAsync(Orig_Failed, "en", lang)
+        );
+
+        t_Title = results[0];
+        t_Email = results[1];
+        t_Password = results[2];
+        t_RegisterButton = results[3];
+        t_PassUpperLower = results[4];
+        t_PassLength = results[5];
+        t_Success = results[6];
+        t_Failed = results[7];
+    }
+
+    // Rejestracja użytkowników
     public void RegisterUser()
     {
         string hashPassword;
 
-        //wymóg, aby hasło zawierało duże litery i małe litery i cyfry
-        if (!(Regex.IsMatch(Input.Password, "[A-Z]") && Regex.IsMatch(Input.Password, "[a-z]") && Regex.IsMatch(Input.Password, "[0-9]")))
+        // Wymóg — hasło musi zawierać duże, małe litery i cyfry
+        if (!(Regex.IsMatch(Input.Password, "[A-Z]") &&
+              Regex.IsMatch(Input.Password, "[a-z]") &&
+              Regex.IsMatch(Input.Password, "[0-9]")))
         {
-            alert.ShowFailed("Password must contain uppercase letters, lowercase letters and numbers");
+            alert.ShowFailed(t_PassUpperLower);
             return;
         }
 
-        //wymóg, aby hasło składało się z przynajmniej 8 znaków
+        // Wymóg — hasło musi mieć przynajmniej 8 znaków
         if (Input.Password.Length < 8)
         {
-            alert.ShowFailed("Password must be at least 8 characters long");
+            alert.ShowFailed(t_PassLength);
             return;
         }
 
         hashPassword = EncryptProvider.Sha256(Input.Password);
 
-        //przekazanie obiektuUser do userService.SaveUser
+        // Przekazanie obiektu User do userService.SaveUser
         bool result = userService.SaveUser(
-            //utworzenie nowego obiektu User
             new User
-                {
-                    EMAIL = Input.Email,
-                    PASSWORD = hashPassword,
-                    ROLE = "DefaultUser"
-                }
+            {
+                EMAIL = Input.Email,
+                PASSWORD = hashPassword,
+                ROLE = "DefaultUser"
+            }
         );
 
-        //jeśli zapis się udał: zielony alert
+        // Jeśli zapis się udał: zielony alert
         if (result)
-        {
-            alert.ShowSuccess("Register Successfully");
-        }
-        //jeśli zapis się nie udał: czerwony alert
+            alert.ShowSuccess(t_Success);
+        // Jeśli zapis się nie udał: czerwony alert
         else
-        {
-            alert.ShowFailed("Register Failed");
-        }
+            alert.ShowFailed(t_Failed);
     }
 
-    //przechowuje dane wpisane przez użytkownika w formularzu, wszystkie pola wymagane
+    // Przechowuje dane wpisane przez użytkownika w formularzu
     private sealed class InputModel
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = ""; //get; set; potrzebne do powiązania @bind-Value
+        public string Email { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
+    }
 
-        //[Required]
-        //[DataType(DataType.Text)]
-        //public string Role { get; set; } = "";
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

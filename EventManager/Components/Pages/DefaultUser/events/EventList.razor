@@ -5,26 +5,26 @@
 @inject IEventService EventService
 @inject UserService UserService
 @inject NavigationManager Navigation
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @attribute [Authorize(Roles = "DefaultUser")]
 
 @* Nagłówek strony z listą eventów *@
-<h1>Events List</h1>
+<h1>@t_Title</h1>
 
 @* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
 @if (events == null)
 {
-    <p>Loading...</p>
+    <p>@t_Loading</p>
 }
-@* W przypadku nie zaakceptowania regulaminu, wyświetlamy zachętę do jego przeczytania i zaakceptowania, aby móc przeglądać nadchodzące wydarzenia. *@
+@* W przypadku nie zaakceptowania regulaminu, wyświetlamy zachętę *@
 else if (!UserTermsAccepted)
 {
-    <h3>Just one more step!</h3>
-    <p>We can't wait to show you what's happening!</p>
-    <p>To browse our upcoming events, please review and accept our Terms of Service and Privacy Policy. 
-        This ensures you have all the necessary information regarding bookings and attendance.</p>
-
-    <button class="btn btn-primary" @onclick="GoToStatute">Review and Accept Terms</button>
+    <h3>@t_OneMoreStep</h3>
+    <p>@t_CantWait</p>
+    <p>@t_TermsInfo</p>
+    <button class="btn btn-primary" @onclick="GoToStatute">@t_ReviewTerms</button>
 }
 @* Gdy lista została pobrana, wyświetlamy tabelę *@
 else
@@ -34,11 +34,11 @@ else
             @* Nagłówki kolumn tabeli *@
             <tr>
                 <th>ID</th>
-                <th>Short Desc</th>
-                <th>Seat Limit</th>
-                <th>Occupied Seats</th>
-                <th>Date</th>
-                <th>Actions</th>
+                <th>@t_ColShortDesc</th>
+                <th>@t_ColSeatLimit</th>
+                <th>@t_ColOccupied</th>
+                <th>@t_ColDate</th>
+                <th>@t_ColActions</th>
             </tr>
         </thead>
         <tbody>
@@ -46,15 +46,17 @@ else
             @foreach (var ev in events)
             {
                 <tr>
-                    <td>@ev.EVENT_ID</td>                           @* Identyfikator eventu *@
-                    <td>@ev.SHORT_DESC</td>                         @* Krótki opis eventu *@
-                    <td>@ev.SPACE_LIMIT</td>                        @* Limit miejsc *@
-                    <td>@ev.CURR_SPACE</td>                         @* Aktualne miejsca *@
-                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @* Data eventu *@
+                    <td>@ev.EVENT_ID</td>
+                    @* Krótki opis eventu — przetłumaczony jeśli dostępny *@
+                    <td>@GetTranslatedShortDesc(ev.EVENT_ID, ev.SHORT_DESC)</td>
+                    <td>@ev.SPACE_LIMIT</td>
+                    <td>@ev.CURR_SPACE</td>
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
                     <td>
-                        @* Przycisk prowadzący do strony ze szczegółami konkretnego eventu *@
-                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">
-                            Details
+                        @* Przycisk prowadzący do strony ze szczegółami eventu *@
+                        <button class="btn btn-primary"
+                                @onclick="@(() => Navigation.NavigateTo($"/events/{ev.EVENT_ID}"))">
+                            @t_Details
                         </button>
                     </td>
                 </tr>
@@ -66,45 +68,151 @@ else
 @code {
     @* Lista eventów pobrana z serwisu *@
     private List<Event>? events;
-    @* Flaga sprawdzająca czy użytkownik zaakceptował regulamin, aby móc przeglądać listę eventów. *@
+
+    @* Flaga sprawdzająca czy użytkownik zaakceptował regulamin *@
     private bool UserTermsAccepted = false;
-    @*Zmienna przechowyjąca identyfikator aktualnie zalogowanego użytkownika, potrzebna do sprawdzenia jego stanu akceptacji regulaminu. *@
+
+    @* Identyfikator aktualnie zalogowanego użytkownika *@
     private string currentUserId = string.Empty;
+
+    @* Słownik przetłumaczonych krótkich opisów eventów: EVENT_ID → przetłumaczony tekst *@
+    private Dictionary<string, string> translatedShortDescs = new();
+
+    // Oryginalne teksty UI angielskie
+    private const string Orig_Title = "Events List";
+    private const string Orig_Loading = "Loading...";
+    private const string Orig_OneMoreStep = "Just one more step!";
+    private const string Orig_CantWait = "We can't wait to show you what's happening!";
+    private const string Orig_TermsInfo = "To browse our upcoming events, please review and accept our Terms of Service and Privacy Policy. This ensures you have all the necessary information regarding bookings and attendance.";
+    private const string Orig_ReviewTerms = "Review and Accept Terms";
+    private const string Orig_ColShortDesc = "Short Desc";
+    private const string Orig_ColSeatLimit = "Seat Limit";
+    private const string Orig_ColOccupied = "Occupied Seats";
+    private const string Orig_ColDate = "Date";
+    private const string Orig_ColActions = "Actions";
+    private const string Orig_Details = "Details";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Title = Orig_Title;
+    private string t_Loading = Orig_Loading;
+    private string t_OneMoreStep = Orig_OneMoreStep;
+    private string t_CantWait = Orig_CantWait;
+    private string t_TermsInfo = Orig_TermsInfo;
+    private string t_ReviewTerms = Orig_ReviewTerms;
+    private string t_ColShortDesc = Orig_ColShortDesc;
+    private string t_ColSeatLimit = Orig_ColSeatLimit;
+    private string t_ColOccupied = Orig_ColOccupied;
+    private string t_ColDate = Orig_ColDate;
+    private string t_ColActions = Orig_ColActions;
+    private string t_Details = Orig_Details;
 
     @* Pobranie wszystkich eventów oraz sprawdzenie, czy aktualny użytkownik może je oglądać *@
     protected override async Task OnInitializedAsync()
     {
-        // Pobranie pełnej listy eventów z serwisu.
-        // Dane są pobierane asynchronicznie podczas inicjalizacji komponentu,
-        // dzięki czemu strona może później wyświetlić tabelę z wydarzeniami.
+        // Pobranie pełnej listy eventów
         events = await EventService.GetEventsAsync();
 
-        // Pobranie e-maila aktualnie zalogowanego użytkownika.
-        // Ta wartość jest potrzebna, aby sprawdzić w bazie danych,
-        // czy konkretny użytkownik zaakceptował regulamin.
+        // Pobranie e-maila zalogowanego użytkownika
         currentUserId = UserService.GetEmail();
 
-        // Pobranie z bazy informacji o stanie akceptacji regulaminu
-        // dla aktualnie zalogowanego użytkownika.
+        // Sprawdzenie akceptacji regulaminu
         var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
+        UserTermsAccepted = termsValue == "YES";
 
-        // Jeżeli użytkownik wcześniej zaakceptował regulamin,
-        // ustawiamy flagę UserTermsAccepted na true.
-        // Dzięki temu w widoku zostanie wyświetlona lista eventów.
-        if (termsValue == "YES")
+        // Subskrypcja zmiany języka
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        if (lang == "en")
         {
-            UserTermsAccepted = true;
+            // Przywróć teksty UI
+            t_Title = Orig_Title;
+            t_Loading = Orig_Loading;
+            t_OneMoreStep = Orig_OneMoreStep;
+            t_CantWait = Orig_CantWait;
+            t_TermsInfo = Orig_TermsInfo;
+            t_ReviewTerms = Orig_ReviewTerms;
+            t_ColShortDesc = Orig_ColShortDesc;
+            t_ColSeatLimit = Orig_ColSeatLimit;
+            t_ColOccupied = Orig_ColOccupied;
+            t_ColDate = Orig_ColDate;
+            t_ColActions = Orig_ColActions;
+            t_Details = Orig_Details;
+
+            // Przywróć oryginalne opisy eventów
+            translatedShortDescs.Clear();
             return;
         }
 
-        // Jeśli warunek powyżej nie został spełniony,
-        // oznacza to, że użytkownik nie zaakceptował jeszcze regulaminu.
-        // Flaga pozostaje ustawiona na false, więc widok nie pokaże listy eventów.
-        UserTermsAccepted = false;
+        // Teksty UI tłumaczone równolegle
+        var uiResults = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_Title, "en", lang),
+            Translator.TranslateAsync(Orig_Loading, "en", lang),
+            Translator.TranslateAsync(Orig_OneMoreStep, "en", lang),
+            Translator.TranslateAsync(Orig_CantWait, "en", lang),
+            Translator.TranslateAsync(Orig_TermsInfo, "en", lang),
+            Translator.TranslateAsync(Orig_ReviewTerms, "en", lang),
+            Translator.TranslateAsync(Orig_ColShortDesc, "en", lang),
+            Translator.TranslateAsync(Orig_ColSeatLimit, "en", lang),
+            Translator.TranslateAsync(Orig_ColOccupied, "en", lang),
+            Translator.TranslateAsync(Orig_ColDate, "en", lang),
+            Translator.TranslateAsync(Orig_ColActions, "en", lang),
+            Translator.TranslateAsync(Orig_Details, "en", lang)
+        );
+
+        t_Title = uiResults[0];
+        t_Loading = uiResults[1];
+        t_OneMoreStep = uiResults[2];
+        t_CantWait = uiResults[3];
+        t_TermsInfo = uiResults[4];
+        t_ReviewTerms = uiResults[5];
+        t_ColShortDesc = uiResults[6];
+        t_ColSeatLimit = uiResults[7];
+        t_ColOccupied = uiResults[8];
+        t_ColDate = uiResults[9];
+        t_ColActions = uiResults[10];
+        t_Details = uiResults[11];
+
+        // Opisy eventów tłumaczone równolegle — wszystkie naraz
+        if (events != null && events.Count > 0)
+        {
+            var descTasks = events.Select(ev =>
+                Translator.TranslateAsync(ev.SHORT_DESC ?? string.Empty, "en", lang));
+
+            var descResults = await Task.WhenAll(descTasks);
+
+            translatedShortDescs.Clear();
+            for (int i = 0; i < events.Count; i++)
+                translatedShortDescs[events[i].EVENT_ID] = descResults[i];
+        }
     }
-    
+
+    @* Zwraca przetłumaczony opis lub oryginalny jeśli tłumaczenie niedostępne *@
+    private string GetTranslatedShortDesc(string eventId, string original)
+    {
+        return translatedShortDescs.TryGetValue(eventId, out var translated)
+            ? translated
+            : original;
+    }
+
     private void GoToStatute()
     {
         Navigation.NavigateTo("/statute");
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

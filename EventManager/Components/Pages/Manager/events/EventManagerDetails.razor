@@ -5,18 +5,20 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @attribute [Authorize(Roles = "Manager")]
 
 @* Jeśli dane eventu jeszcze się nie załadowały, pokazujemy komunikat *@
 @if (ev == null)
 {
-    <div class="alert alert-info">Loading event details...</div>
+    <div class="alert alert-info">@t_Loading</div>
 }
 @* Jeśli po pobraniu identyfikatora nie znaleziono eventu, pokazujemy ostrzeżenie *@
 else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
-    <div class="alert alert-warning">Event not found.</div>
+    <div class="alert alert-warning">@t_NotFound</div>
 }
 @* Jeśli event został poprawnie pobrany, wyświetlamy jego szczegóły w karcie *@
 else
@@ -24,41 +26,41 @@ else
     <div class="card">
         <div class="card-header">
             @* Krótki opis eventu jako nagłówek karty *@
-            <h3>@ev.SHORT_DESC</h3>
+            <h3>@translatedShortDesc</h3>
         </div>
         <div class="card-body">
             @* Lista szczegółów eventu w układzie etykieta-wartość *@
             <dl class="row">
                 <dt class="col-sm-3">ID:</dt>
                 <dd class="col-sm-9">@ev.EVENT_ID</dd>
-                
-                <dt class="col-sm-3">Description:</dt>
-                <dd class="col-sm-9">@ev.DESCRIPTION</dd>
-                
-                <dt class="col-sm-3">Seat limit:</dt>
+
+                <dt class="col-sm-3">@t_Description</dt>
+                <dd class="col-sm-9">@translatedDescription</dd>
+
+                <dt class="col-sm-3">@t_SeatLimit</dt>
                 <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
-                
-                <dt class="col-sm-3">Occupied seats:</dt>
+
+                <dt class="col-sm-3">@t_OccupiedSeats</dt>
                 @* Pokazanie liczby zajętych miejsc oraz procentu zapełnienia eventu *@
                 <dd class="col-sm-9">
                     @ev.CURR_SPACE
                     <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span>
                 </dd>
-                
-                <dt class="col-sm-3">Event date:</dt>
+
+                <dt class="col-sm-3">@t_EventDate</dt>
                 @* Formatowanie daty w czytelnym formacie dzień.miesiąc.rok *@
                 <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
             </dl>
         </div>
         <div class="card-footer">
-            @* Przycisk do edycji eventu, przechodzący do strony edycji *@
-            <button class="btn btn-warning me-2" @onclick="EditEvent">Edit</button>
+            @* Przycisk do edycji eventu *@
+            <button class="btn btn-warning me-2" @onclick="EditEvent">@t_Edit</button>
 
             @* Przycisk do usunięcia eventu *@
-            <button class="btn btn-danger" @onclick="ShowConfirmPopup">Delete</button>
+            <button class="btn btn-danger" @onclick="ShowConfirmPopup">@t_Delete</button>
 
             @* Przycisk powrotu do listy wszystkich eventów *@
-            <button class="btn btn-secondary me-2" @onclick="BackToList">Back to list</button>
+            <button class="btn btn-secondary me-2" @onclick="BackToList">@t_BackToList</button>
         </div>
     </div>
 }
@@ -70,19 +72,18 @@ else
             <div class="popup-header">
                 <div class="popup-title-wrap">
                     <span class="popup-icon">❌</span>
-                    <span class="popup-title">Delete Confirmation</span>
+                    <span class="popup-title">@t_PopupTitle</span>
                 </div>
-
                 <button type="button" class="popup-close" @onclick="HideConfirmPopup">×</button>
             </div>
 
             <div class="popup-body">
-                <p>Are you sure you want to delete this record?</p>
+                <p>@t_PopupBody</p>
             </div>
 
             <div class="popup-footer">
-                <button class="btn btn-danger" @onclick="DeleteEventAsync">Delete</button>
-                <button class="btn btn-outline-secondary" @onclick="HideConfirmPopup">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteEventAsync">@t_Delete</button>
+                <button class="btn btn-outline-secondary" @onclick="HideConfirmPopup">@t_Cancel</button>
             </div>
         </div>
     </div>
@@ -98,20 +99,133 @@ else
     // Flaga sterująca widocznością okna potwierdzenia usunięcia
     private bool showConfirmPopup = false;
 
+    // Przetłumaczone treści dynamiczne eventu
+    private string translatedShortDesc = string.Empty;
+    private string translatedDescription = string.Empty;
+
+    // Oryginalne teksty UI angielskie
+    private const string Orig_Loading = "Loading event details...";
+    private const string Orig_NotFound = "Event not found.";
+    private const string Orig_Description = "Description:";
+    private const string Orig_SeatLimit = "Seat limit:";
+    private const string Orig_OccupiedSeats = "Occupied seats:";
+    private const string Orig_EventDate = "Event date:";
+    private const string Orig_Edit = "Edit";
+    private const string Orig_Delete = "Delete";
+    private const string Orig_BackToList = "Back to list";
+    private const string Orig_PopupTitle = "Delete Confirmation";
+    private const string Orig_PopupBody = "Are you sure you want to delete this record?";
+    private const string Orig_Cancel = "Cancel";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Loading = Orig_Loading;
+    private string t_NotFound = Orig_NotFound;
+    private string t_Description = Orig_Description;
+    private string t_SeatLimit = Orig_SeatLimit;
+    private string t_OccupiedSeats = Orig_OccupiedSeats;
+    private string t_EventDate = Orig_EventDate;
+    private string t_Edit = Orig_Edit;
+    private string t_Delete = Orig_Delete;
+    private string t_BackToList = Orig_BackToList;
+    private string t_PopupTitle = Orig_PopupTitle;
+    private string t_PopupBody = Orig_PopupBody;
+    private string t_Cancel = Orig_Cancel;
+
     // Pobiera dane eventu po załadowaniu komponentu
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventAsync(Id);
+
+        // Subskrypcja zmiany języka
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        if (lang == "en")
+        {
+            t_Loading = Orig_Loading;
+            t_NotFound = Orig_NotFound;
+            t_Description = Orig_Description;
+            t_SeatLimit = Orig_SeatLimit;
+            t_OccupiedSeats = Orig_OccupiedSeats;
+            t_EventDate = Orig_EventDate;
+            t_Edit = Orig_Edit;
+            t_Delete = Orig_Delete;
+            t_BackToList = Orig_BackToList;
+            t_PopupTitle = Orig_PopupTitle;
+            t_PopupBody = Orig_PopupBody;
+            t_Cancel = Orig_Cancel;
+
+            // Przywróć oryginalne treści eventu
+            translatedShortDesc = ev?.SHORT_DESC ?? string.Empty;
+            translatedDescription = ev?.DESCRIPTION ?? string.Empty;
+            return;
+        }
+
+        // Teksty UI i treści eventu tłumaczone równolegle
+        var uiTask = Task.WhenAll(
+            Translator.TranslateAsync(Orig_Loading, "en", lang),
+            Translator.TranslateAsync(Orig_NotFound, "en", lang),
+            Translator.TranslateAsync(Orig_Description, "en", lang),
+            Translator.TranslateAsync(Orig_SeatLimit, "en", lang),
+            Translator.TranslateAsync(Orig_OccupiedSeats, "en", lang),
+            Translator.TranslateAsync(Orig_EventDate, "en", lang),
+            Translator.TranslateAsync(Orig_Edit, "en", lang),
+            Translator.TranslateAsync(Orig_Delete, "en", lang),
+            Translator.TranslateAsync(Orig_BackToList, "en", lang),
+            Translator.TranslateAsync(Orig_PopupTitle, "en", lang),
+            Translator.TranslateAsync(Orig_PopupBody, "en", lang),
+            Translator.TranslateAsync(Orig_Cancel, "en", lang)
+        );
+
+        // Treści eventu tłumaczone tylko jeśli event został pobrany
+        var eventTask = ev != null
+            ? Task.WhenAll(
+                Translator.TranslateAsync(ev.SHORT_DESC ?? string.Empty, "en", lang),
+                Translator.TranslateAsync(ev.DESCRIPTION ?? string.Empty, "en", lang)
+              )
+            : Task.FromResult(Array.Empty<string>());
+
+        // Oba zadania równolegle
+        await Task.WhenAll(uiTask, eventTask);
+
+        var ui = await uiTask;
+        t_Loading = ui[0];
+        t_NotFound = ui[1];
+        t_Description = ui[2];
+        t_SeatLimit = ui[3];
+        t_OccupiedSeats = ui[4];
+        t_EventDate = ui[5];
+        t_Edit = ui[6];
+        t_Delete = ui[7];
+        t_BackToList = ui[8];
+        t_PopupTitle = ui[9];
+        t_PopupBody = ui[10];
+        t_Cancel = ui[11];
+
+        var evT = await eventTask;
+        if (evT.Length == 2)
+        {
+            translatedShortDesc = evT[0];
+            translatedDescription = evT[1];
+        }
     }
 
     // Zwraca klasę CSS badge na podstawie procentu zajętości miejsc
-    // Im więcej zajętych miejsc, tym bardziej alarmowy kolor
     private string GetBadgeClass()
     {
         if (ev == null) return "";
-
         var percent = (double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100;
-
         return percent > 90 ? "bg-danger" : percent > 70 ? "bg-warning" : "bg-success";
     }
 
@@ -119,7 +233,6 @@ else
     private string GetOccupancyPercent()
     {
         if (ev == null) return "";
-
         return Math.Round((double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100).ToString();
     }
 
@@ -128,21 +241,14 @@ else
 
     // Przenosi użytkownika z powrotem do listy eventów
     private void BackToList() => Navigation.NavigateTo("/eventsManager");
-    
+
     // Pokazuje popup z potwierdzeniem usunięcia
-    private void ShowConfirmPopup()
-    {
-        showConfirmPopup = true;
-    }
+    private void ShowConfirmPopup() => showConfirmPopup = true;
 
     // Ukrywa popup z potwierdzeniem usunięcia
-    private void HideConfirmPopup()
-    {
-        showConfirmPopup = false;
-    }
+    private void HideConfirmPopup() => showConfirmPopup = false;
 
-    // Usuwa event z bazy danych, jeśli obiekt został poprawnie pobrany
-    // Po usunięciu następuje powrót do listy
+    // Usuwa event z bazy danych i wraca do listy
     private async Task DeleteEventAsync()
     {
         if (ev != null)
@@ -150,5 +256,10 @@ else
             await EventService.DeleteEventAsync(ev.EVENT_ID);
             Navigation.NavigateTo("/eventsManager");
         }
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

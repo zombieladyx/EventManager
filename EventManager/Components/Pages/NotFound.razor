@@ -1,5 +1,51 @@
 ﻿@page "/not-found"
 @layout MainLayout
+@using EventManager.Data
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<h3>@t_Title</h3>
+<p>@t_Description</p>
+
+@code {
+    private const string Orig_Title = "Not Found";
+    private const string Orig_Description = "Sorry, the content you are looking for does not exist.";
+
+    private string t_Title = Orig_Title;
+    private string t_Description = Orig_Description;
+
+    protected override void OnInitialized()
+    {
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+        _ = TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        if (lang == "en")
+        {
+            t_Title = Orig_Title;
+            t_Description = Orig_Description;
+            return;
+        }
+
+        var results = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_Title, "en", lang),
+            Translator.TranslateAsync(Orig_Description, "en", lang)
+        );
+
+        t_Title = results[0];
+        t_Description = results[1];
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
+    }
+}

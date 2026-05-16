@@ -4,93 +4,197 @@
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @attribute [Authorize(Roles = "Manager")]
 
-@* Nagłówek strony z formularzem dodawania nowego wydarzenia *@
-<h3>Add New Event</h3>
+@* Nagłówek strony *@
+<h3>@t_AddNewEvent</h3>
 
-@* Formularz tworzenia nowego wydarzenia *@
+@* Formularz dodawania nowego wydarzenia *@
 <EditForm Model="newEvent" OnValidSubmit="HandleSubmit">
-    @* Walidacja oparta na atrybutach w modelu Event *@
+
+    @* Walidacja modelu *@
     <DataAnnotationsValidator />
 
-    @* Wyświetlenie wszystkich błędów walidacji *@
+    @* Wyświetlenie błędów walidacji *@
     <ValidationSummary />
 
-    @* Pole na identyfikator wydarzenia *@
+    @* ID wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Event ID (6 characters)</label>
-        <InputText @bind-Value="newEvent.EVENT_ID" class="form-control" />
+        <label class="form-label">@t_EventId</label>
+
+        <InputText @bind-Value="newEvent.EVENT_ID"
+                   class="form-control" />
     </div>
 
-    @* Pole na krótki opis wydarzenia *@
+    @* Krótki opis *@
     <div class="mb-3">
-        <label class="form-label">Short description</label>
-        <InputText @bind-Value="newEvent.SHORT_DESC" class="form-control" />
+        <label class="form-label">@t_ShortDescription</label>
+
+        <InputText @bind-Value="newEvent.SHORT_DESC"
+                   class="form-control" />
     </div>
 
-    @* Pole na długi opis wydarzenia *@
+    @* Długi opis *@
     <div class="mb-3">
-        <label class="form-label">Description</label>
-        <InputTextArea @bind-Value="newEvent.DESCRIPTION" class="form-control" />
+        <label class="form-label">@t_Description</label>
+
+        <InputTextArea @bind-Value="newEvent.DESCRIPTION"
+                       class="form-control" />
     </div>
 
-    @* Pole na liczbę dostępnych miejsc *@
+    @* Limit miejsc *@
     <div class="mb-3">
-        <label class="form-label">Seat limit</label>
-        <InputNumber @bind-Value="newEvent.SPACE_LIMIT" class="form-control" />
+        <label class="form-label">@t_SeatLimit</label>
+
+        <InputNumber @bind-Value="newEvent.SPACE_LIMIT"
+                     class="form-control" />
     </div>
 
-    @* Pole wyboru daty wydarzenia *@
+    @* Data wydarzenia *@
     <div class="mb-3">
-        <label class="form-label">Event date</label>
-        <InputDate @bind-Value="eventDate" class="form-control" />
+        <label class="form-label">@t_EventDate</label>
+
+        <InputDate @bind-Value="eventDate"
+                   class="form-control" />
     </div>
 
-    @* Przycisk zapisujący nowe wydarzenie *@
-    <button type="submit" class="btn btn-primary">Save</button>
+    @* Przyciski formularza *@
+    <button type="submit"
+            class="btn btn-primary">
+        @t_Save
+    </button>
 
-    @* Przycisk anulujący dodawanie i wracający do listy *@
-    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
+    <button type="button"
+            class="btn btn-secondary ms-2"
+            @onclick="Cancel">
+        @t_Cancel
+    </button>
+
 </EditForm>
 
 @code {
-    // Obiekt reprezentujący nowe wydarzenie w formularzu
+
+    // Obiekt reprezentujący nowe wydarzenie
     private Event newEvent = new();
 
-    // Tymczasowa zmienna przechowująca datę w formacie DateTime
+    // Tymczasowa zmienna daty
     private DateTime eventDate = DateTime.Today;
 
-    // Inicjalizacja formularza - nowe wydarzenie zaczyna z liczbą zajętych miejsc = 0
-    protected override void OnInitialized()
+    // Oryginalne teksty UI (EN)
+    private const string Orig_AddNewEvent = "Add New Event";
+    private const string Orig_EventId = "Event ID (6 characters)";
+    private const string Orig_ShortDescription = "Short description";
+    private const string Orig_Description = "Description";
+    private const string Orig_SeatLimit = "Seat limit";
+    private const string Orig_EventDate = "Event date";
+    private const string Orig_Save = "Save";
+    private const string Orig_Cancel = "Cancel";
+
+    // Aktualne teksty UI
+    private string t_AddNewEvent = Orig_AddNewEvent;
+    private string t_EventId = Orig_EventId;
+    private string t_ShortDescription = Orig_ShortDescription;
+    private string t_Description = Orig_Description;
+    private string t_SeatLimit = Orig_SeatLimit;
+    private string t_EventDate = Orig_EventDate;
+    private string t_Save = Orig_Save;
+    private string t_Cancel = Orig_Cancel;
+
+    // Inicjalizacja formularza
+    protected override async Task OnInitializedAsync()
     {
+        // Nowy event zawsze zaczyna od 0 zajętych miejsc
         newEvent.CURR_SPACE = 0;
+
+        // Subskrypcja zmiany języka
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
     }
 
-    // Metoda wywoływana po poprawnym zatwierdzeniu formularza
+    // Obsługa zmiany języka
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Tłumaczenie wszystkich tekstów UI
+    private async Task TranslateAll(string lang)
+    {
+        // Jeśli EN — przywróć oryginalne teksty
+        if (lang == "en")
+        {
+            t_AddNewEvent = Orig_AddNewEvent;
+            t_EventId = Orig_EventId;
+            t_ShortDescription = Orig_ShortDescription;
+            t_Description = Orig_Description;
+            t_SeatLimit = Orig_SeatLimit;
+            t_EventDate = Orig_EventDate;
+            t_Save = Orig_Save;
+            t_Cancel = Orig_Cancel;
+
+            return;
+        }
+
+        // Tłumaczenie równoległe
+        var ui = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_AddNewEvent, "en", lang),
+            Translator.TranslateAsync(Orig_EventId, "en", lang),
+            Translator.TranslateAsync(Orig_ShortDescription, "en", lang),
+            Translator.TranslateAsync(Orig_Description, "en", lang),
+            Translator.TranslateAsync(Orig_SeatLimit, "en", lang),
+            Translator.TranslateAsync(Orig_EventDate, "en", lang),
+            Translator.TranslateAsync(Orig_Save, "en", lang),
+            Translator.TranslateAsync(Orig_Cancel, "en", lang)
+        );
+
+        t_AddNewEvent = ui[0];
+        t_EventId = ui[1];
+        t_ShortDescription = ui[2];
+        t_Description = ui[3];
+        t_SeatLimit = ui[4];
+        t_EventDate = ui[5];
+        t_Save = ui[6];
+        t_Cancel = ui[7];
+    }
+
+    // Obsługa zapisu formularza
     private async Task HandleSubmit()
     {
-        // Sprawdzenie, czy identyfikator ma dokładnie 6 znaków
-        if (string.IsNullOrWhiteSpace(newEvent.EVENT_ID) || newEvent.EVENT_ID.Length != 6)
+        // ID musi mieć dokładnie 6 znaków
+        if (string.IsNullOrWhiteSpace(newEvent.EVENT_ID)
+            || newEvent.EVENT_ID.Length != 6)
+        {
             return;
+        }
 
-        // Konwersja daty do formatu DateOnly zgodnego z modelem
+        // Konwersja DateTime -> DateOnly
         newEvent.EVENT_DATE = DateOnly.FromDateTime(eventDate);
 
-        // Ustawienie liczby zajętych miejsc na 0 przy tworzeniu
+        // Liczba zajętych miejsc przy tworzeniu = 0
         newEvent.CURR_SPACE = 0;
 
-        // Zapisanie nowego wydarzenia do bazy
+        // Zapis do bazy danych
         await EventService.AddEventAsync(newEvent);
 
-        // Powrót do listy wydarzeń managera
+        // Powrót do listy eventów
         Navigation.NavigateTo("/eventsManager");
     }
 
-    // Powrót do listy bez zapisywania
+    // Anulowanie tworzenia
     private void Cancel()
     {
         Navigation.NavigateTo("/eventsManager");
+    }
+
+    // Usunięcie subskrypcji po zamknięciu komponentu
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

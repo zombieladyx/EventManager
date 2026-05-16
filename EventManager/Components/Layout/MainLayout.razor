@@ -1,18 +1,36 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization @*potrzebne dla AuthorizeView itp.*@ 
-@using System.Security.Claims @*potrzebne dla ClaimTypes.Name, ClaimTypes.Role*@
-@inherits LayoutComponentBase //layout, a nie zwykły komponent
+﻿@using EventManager.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inherits LayoutComponentBase
 
-@inject AuthenticationStateProvider auth 
-@inject NavigationManager nav
+@inject AuthenticationStateProvider auth
+@inject LanguageStateService LanguageState
+@inject IJSRuntime JS
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu /> @*menu boczne*@
+        <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <CascadingAuthenticationState> @*udostępnia stan logowania wszystkim komponentom wewnątrz, dlatego AuthorizeView wie, czy użytkownik jest zalogowany*@
+        <div class="top-row px-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <label class="form-label mb-0">Language:</label>
+
+                @* @onchange zamiast @bind:after — bardziej niezawodne *@
+                <select class="form-select w-auto"
+                        value="@selectedLanguage"
+                        @onchange="OnLanguageChanged">
+                    <option value="en">English</option>
+                    <option value="pl">Polski</option>
+                    <option value="de">Deutsch</option>
+                    <option value="es">Español</option>
+                    <option value="ru">Русский</option>
+                    <option value="zh-Hans">中文</option>
+                </select>
+            </div>
+
+            <CascadingAuthenticationState>
                 <AuthorizeView>
                     <NotAuthorized>
                         <NavLink class="nav-link" href="login">
@@ -23,8 +41,8 @@
                         </NavLink>
                     </NotAuthorized>
                 </AuthorizeView>
-                <AuthorizeView> @*renderuje zawartość tylko dla zalogowanych użytkowników, a jeśli użytkownik jest niezalogowany, nic nie pokaże*@
-                    @*Hello @email - @role <a href="/logout" >Logout</a>*@
+
+                <AuthorizeView>
                     Hello @email - @role
                     <NavLink class="nav-link" href="logout">
                         <button class="btn btn-login">Logout</button>
@@ -34,12 +52,11 @@
         </div>
 
         <article class="content px-4">
-            @Body @*miejsce, gdzie renderują się wszystkie strony z @page*@
+            @Body
         </article>
     </main>
 </div>
 
-@*pokazuje się, gdy aplikacja Blazor Server straci połączenie lub wystąpi błąd*@
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
@@ -47,21 +64,71 @@
 </div>
 
 @code {
-    public string email { get; set; }
-    public string role { get; set; }
+    public string email { get; set; } = string.Empty;
+    public string role { get; set; } = string.Empty;
+    private string selectedLanguage = "en";
 
     protected override async Task OnInitializedAsync()
     {
-        //pobranie stanu logowania
         var state = await auth.GetAuthenticationStateAsync();
-        //pobranie użytkownika
         var user = state.User;
 
-        //jeśli użytkownik jest zalogowany, email i rola pobierane są z Claims
-        if (user.Identity.IsAuthenticated)
+        if (user.Identity?.IsAuthenticated == true)
         {
-            email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-            role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+            email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value ?? string.Empty;
+            role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? string.Empty;
         }
+
+        LanguageState.OnLanguageChanged += HandleLanguageChanged;
+    }
+
+    private bool _languageInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_languageInitialized) return;
+
+        try
+        {
+            var saved = await JS.InvokeAsync<string?>("languageHelper.get");
+
+            // Walidacja przed użyciem — odrzuć wszystko spoza listy
+            var allowed = new[] { "en", "pl", "de", "es", "ru", "zh-Hans" };
+            var lang = (saved != null && allowed.Contains(saved)) ? saved : "en";
+
+            LanguageState.InitializeLanguage(lang);
+            selectedLanguage = lang;
+            _languageInitialized = true;
+            StateHasChanged();
+        }
+        catch
+        {
+            // JS niedostępny podczas prerenderingu
+        }
+    }
+
+    private async Task OnLanguageChanged(ChangeEventArgs e)
+    {
+        var lang = e.Value?.ToString();
+
+        // Odrzuć wszystko co nie jest prawidłowym kodem języka
+        var allowed = new[] { "en", "pl", "de", "es", "ru", "zh-Hans" };
+        if (string.IsNullOrWhiteSpace(lang) || !allowed.Contains(lang))
+            return;
+
+        selectedLanguage = lang;
+        await JS.InvokeVoidAsync("languageHelper.set", lang);
+        LanguageState.SetLanguage(lang);
+    }
+
+    private void HandleLanguageChanged()
+    {
+        selectedLanguage = LanguageState.CurrentLanguage;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= HandleLanguageChanged;
     }
 }

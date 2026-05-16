@@ -4,51 +4,65 @@
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @attribute [Authorize(Roles = "Manager")]
 
-@* Nagłówek strony z listą eventów *@
-<h3>Events List</h3>
+@* Nagłówek strony *@
+<h3>@t_EventsList</h3>
 
-@* Jeśli dane jeszcze się ładują, pokazujemy komunikat *@
+@* Jeśli dane jeszcze się ładują *@
 @if (events == null)
 {
-    <p>Loading...</p>
+    <div class="alert alert-info">@t_Loading</div>
 }
 else
 {
-    @* Przycisk dodawania nowego wydarzenia *@
-    <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo("/eventsManagerCreate"))">
-        Add Event
+    @* Przycisk dodawania nowego eventu *@
+    <button class="btn btn-primary mb-3"
+            @onclick="@(() => Navigation.NavigateTo("/eventsManagerCreate"))">
+        @t_AddEvent
     </button>
 
-    @* Tabela z listą wszystkich wydarzeń *@
-    <table class="table">
+    @* Tabela z listą eventów *@
+    <table class="table table-striped">
         <thead>
-            @* Nagłówki kolumn tabeli *@
             <tr>
                 <th>ID</th>
-                <th>Short Desc</th>
-                <th>Seat Limit</th>
-                <th>Occupied Seats</th>
-                <th>Date</th>
-                <th>Actions</th>
+                <th>@t_ShortDesc</th>
+                <th>@t_SeatLimit</th>
+                <th>@t_OccupiedSeats</th>
+                <th>@t_Date</th>
+                <th>@t_Actions</th>
             </tr>
         </thead>
+
         <tbody>
-            @* Iteracja po wszystkich eventach i wyświetlenie ich w tabeli *@
+            @* Iteracja po wszystkich eventach *@
             @foreach (var ev in events)
             {
                 <tr>
-                    <td>@ev.EVENT_ID</td>                           @* Identyfikator eventu *@
-                    <td>@ev.SHORT_DESC</td>                         @* Krótki opis eventu *@
-                    <td>@ev.SPACE_LIMIT</td>                        @* Limit miejsc *@
-                    <td>@ev.CURR_SPACE</td>                         @* Aktualne miejsca *@
-                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>  @* Data eventu *@
+                    @* ID eventu *@
+                    <td>@ev.EVENT_ID</td>
+
+                    @* Krótki opis *@
+                    <td>@ev.SHORT_DESC</td>
+
+                    @* Limit miejsc *@
+                    <td>@ev.SPACE_LIMIT</td>
+
+                    @* Aktualnie zajęte miejsca *@
+                    <td>@ev.CURR_SPACE</td>
+
+                    @* Data wydarzenia *@
+                    <td>@ev.EVENT_DATE.ToString("yyyy-MM-dd")</td>
+
+                    @* Akcje *@
                     <td>
-                        @* Przycisk prowadzący do strony szczegółów konkretnego eventu *@
-                        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo($"/eventsManager/{ev.EVENT_ID}"))">
-                            Details
+                        <button class="btn btn-primary"
+                                @onclick="@(() => Navigation.NavigateTo($"/eventsManager/{ev.EVENT_ID}"))">
+                            @t_Details
                         </button>
                     </td>
                 </tr>
@@ -58,12 +72,98 @@ else
 }
 
 @code {
+
     // Lista eventów pobrana z serwisu
     private List<Event>? events;
 
-    // Pobranie wszystkich eventów podczas inicjalizacji komponentu
+    // Oryginalne teksty UI (EN)
+    private const string Orig_EventsList = "Events List";
+    private const string Orig_Loading = "Loading...";
+    private const string Orig_AddEvent = "Add Event";
+    private const string Orig_ShortDesc = "Short Desc";
+    private const string Orig_SeatLimit = "Seat Limit";
+    private const string Orig_OccupiedSeats = "Occupied Seats";
+    private const string Orig_Date = "Date";
+    private const string Orig_Actions = "Actions";
+    private const string Orig_Details = "Details";
+
+    // Aktualne teksty UI
+    private string t_EventsList = Orig_EventsList;
+    private string t_Loading = Orig_Loading;
+    private string t_AddEvent = Orig_AddEvent;
+    private string t_ShortDesc = Orig_ShortDesc;
+    private string t_SeatLimit = Orig_SeatLimit;
+    private string t_OccupiedSeats = Orig_OccupiedSeats;
+    private string t_Date = Orig_Date;
+    private string t_Actions = Orig_Actions;
+    private string t_Details = Orig_Details;
+
+    // Pobranie danych przy inicjalizacji komponentu
     protected override async Task OnInitializedAsync()
     {
+        // Pobranie eventów
         events = await EventService.GetEventsAsync();
+
+        // Subskrypcja zmiany języka
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    // Obsługa zmiany języka
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Tłumaczenie wszystkich tekstów UI
+    private async Task TranslateAll(string lang)
+    {
+        // Jeśli język angielski — przywróć oryginalne teksty
+        if (lang == "en")
+        {
+            t_EventsList = Orig_EventsList;
+            t_Loading = Orig_Loading;
+            t_AddEvent = Orig_AddEvent;
+            t_ShortDesc = Orig_ShortDesc;
+            t_SeatLimit = Orig_SeatLimit;
+            t_OccupiedSeats = Orig_OccupiedSeats;
+            t_Date = Orig_Date;
+            t_Actions = Orig_Actions;
+            t_Details = Orig_Details;
+
+            return;
+        }
+
+        // Tłumaczenie równoległe
+        var ui = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_EventsList, "en", lang),
+            Translator.TranslateAsync(Orig_Loading, "en", lang),
+            Translator.TranslateAsync(Orig_AddEvent, "en", lang),
+            Translator.TranslateAsync(Orig_ShortDesc, "en", lang),
+            Translator.TranslateAsync(Orig_SeatLimit, "en", lang),
+            Translator.TranslateAsync(Orig_OccupiedSeats, "en", lang),
+            Translator.TranslateAsync(Orig_Date, "en", lang),
+            Translator.TranslateAsync(Orig_Actions, "en", lang),
+            Translator.TranslateAsync(Orig_Details, "en", lang)
+        );
+
+        t_EventsList = ui[0];
+        t_Loading = ui[1];
+        t_AddEvent = ui[2];
+        t_ShortDesc = ui[3];
+        t_SeatLimit = ui[4];
+        t_OccupiedSeats = ui[5];
+        t_Date = ui[6];
+        t_Actions = ui[7];
+        t_Details = ui[8];
+    }
+
+    // Usunięcie subskrypcji po zamknięciu komponentu
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

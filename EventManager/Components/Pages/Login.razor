@@ -8,8 +8,10 @@
 @using System.Text.RegularExpressions
 @inject UserService userService
 @inject NavigationManager nav
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
-<h1>Login</h1>
+<h1>@t_Title</h1>
 <div class="row">
     <div class="col-md-4">
         <Alert @ref="alert" />
@@ -20,16 +22,16 @@
                 <hr />
                 <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" />
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">@t_Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" aria-required="true" />
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">@t_Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Login</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">@t_LoginButton</button>
                 </div>
             </EditForm>
         </section>
@@ -37,52 +39,121 @@
 </div>
 
 @code {
-    private Alert alert;
+    private Alert alert = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
-    //metoda logowania
+    // Oryginalne teksty angielskie
+    private const string Orig_Title = "Login";
+    private const string Orig_Email = "Email";
+    private const string Orig_Password = "Password";
+    private const string Orig_LoginButton = "Login";
+    private const string Orig_InvalidCreds = "Invalid Email or Password";
+    private const string Orig_AccountLocked = "Account is locked";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Title = Orig_Title;
+    private string t_Email = Orig_Email;
+    private string t_Password = Orig_Password;
+    private string t_LoginButton = Orig_LoginButton;
+    private string t_InvalidCreds = Orig_InvalidCreds;
+    private string t_AccountLocked = Orig_AccountLocked;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Natychmiastowe tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        // Angielski to oryginał — przywróć bez wywołania API
+        if (lang == "en")
+        {
+            t_Title = Orig_Title;
+            t_Email = Orig_Email;
+            t_Password = Orig_Password;
+            t_LoginButton = Orig_LoginButton;
+            t_InvalidCreds = Orig_InvalidCreds;
+            t_AccountLocked = Orig_AccountLocked;
+            return;
+        }
+
+        // Wszystkie teksty tłumaczone równolegle
+        var results = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_Title, "en", lang),
+            Translator.TranslateAsync(Orig_Email, "en", lang),
+            Translator.TranslateAsync(Orig_Password, "en", lang),
+            Translator.TranslateAsync(Orig_LoginButton, "en", lang),
+            Translator.TranslateAsync(Orig_InvalidCreds, "en", lang),
+            Translator.TranslateAsync(Orig_AccountLocked, "en", lang)
+        );
+
+        t_Title = results[0];
+        t_Email = results[1];
+        t_Password = results[2];
+        t_LoginButton = results[3];
+        t_InvalidCreds = results[4];
+        t_AccountLocked = results[5];
+    }
+
+    // Metoda logowania
     public async Task OnLogin()
     {
-        //pobranie użytkownika z bazy
+        // Pobranie użytkownika z bazy
         var user = userService.Verify(Input.Email, Input.Password);
 
-        //jeśli użytkownik nie istnieje: alert
+        // Jeśli użytkownik nie istnieje: alert z przetłumaczonym komunikatem
         if (user is null)
         {
             userService.HandleFailedLogin(Input.Email);
-            alert.ShowFailed("Invalid Email or Password");
+            alert.ShowFailed(t_InvalidCreds);
             return;
         }
 
         if (user.ACCOUNT_LOCKED == "TRUE")
         {
-            alert.ShowFailed("Account is locked");
+            alert.ShowFailed(t_AccountLocked);
             return;
         }
 
         userService.HandleSuccessLogin(Input.Email);
 
-        //tworzenie Claims, info wyświetlane później w MainLayout do pokazania zalogowanego użytkownika
+        // Tworzenie Claims — info wyświetlane w MainLayout
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.EMAIL), //email użytkownika
-            new Claim(ClaimTypes.Role, user.ROLE) //rola użytkownika
+            new Claim(ClaimTypes.Name, user.EMAIL), // email użytkownika
+            new Claim(ClaimTypes.Role, user.ROLE)   // rola użytkownika
         };
 
-        //utworznie tożsamości opartej na cookie auth
+        // Utworzenie tożsamości opartej na cookie auth
         var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-        //utworzenie pryncypału, który reprezentuje zalogowanego użytkownika
+        // Utworzenie pryncypału reprezentującego zalogowanego użytkownika
         ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimIdentity);
 
-        //utworzenie unikalnego klucza GUID
+        // Utworzenie unikalnego klucza GUID
         Guid key = Guid.NewGuid();
-        //wrzucenie użytkownika do słownika AuthMiddleware.Logins
+        // Wrzucenie użytkownika do słownika AuthMiddleware.Logins
         AuthMiddleware.Logins[key] = claimsPrincipal;
-        //przekierowanie na /login?key=...
+        // Przekierowanie na /login?key=...
         nav.NavigateTo($"/login?key={key}", true);
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 
     private sealed class InputModel

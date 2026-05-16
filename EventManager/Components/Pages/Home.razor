@@ -4,8 +4,8 @@
 @rendermode InteractiveServer
 @inject UserService UserService
 @inject NavigationManager Navigation
-
-@* @attribute [Authorize(Roles = "DefaultUser,Manager")] *@
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 <PageTitle>Home</PageTitle>
 
@@ -17,7 +17,7 @@
 
         @* Krótki podtytuł wyjaśniający, co robi aplikacja *@
         <p class="hero-subtitle">
-            Discover, register and manage events near you — easily and reliably.
+            @t_Subtitle
         </p>
     </div>
 </header>
@@ -25,41 +25,133 @@
 @* Sekcja z 4 kluczowymi zaletami aplikacji *@
 <section class="features container">
     <div class="feature">
-        <h3>Find events fast</h3>
-        <p>Search upcoming events</p>
+        <h3>@t_Feature1Title</h3>
+        <p>@t_Feature1Desc</p>
     </div>
     <div class="feature">
-        <h3>Easy booking</h3>
-        <p>Reserve your seat in a few clicks.</p>
+        <h3>@t_Feature2Title</h3>
+        <p>@t_Feature2Desc</p>
     </div>
     <div class="feature">
-        <h3>Manage attendees</h3>
-        <p>Organize participants, view attendee lists and export reports.</p>
+        <h3>@t_Feature3Title</h3>
+        <p>@t_Feature3Desc</p>
     </div>
     <div class="feature">
-        <h3>Multilingual support</h3>
-        <p>Translate event titles, descriptions and UI messages into multiple languages on demand, powered by Azure Translator.</p>
+        <h3>@t_Feature4Title</h3>
+        <p>@t_Feature4Desc</p>
     </div>
 </section>
 
-@* Krótkie CTA z widocznym przyciskiem *@
-<section class="cta container">
-    <h2>Ready to explore?</h2>
-    <p>Sign in to manage your bookings or browse public events.</p>
-    <button class="btn btn-lg btn-success" @onclick="GoToEvents">Get Started</button>
-</section>
 
 @* Prosta stopka z informacją o prawach autorskich *@
 <footer class="site-footer">
     <div class="container">
-        <small>© @DateTime.Now.Year EventManager. All rights reserved.</small>
+        <small>© @DateTime.Now.Year EventManager. @t_Footer</small>
     </div>
 </footer>
 
 @code {
-    // Przekierowanie do listy eventów.
-    private void GoToEvents()
+    // Oryginalne teksty angielskie — zawsze tłumaczymy z tych wartości
+    private const string Orig_Subtitle = "Discover, register and manage events near you — easily and reliably.";
+    private const string Orig_F1Title = "Find events fast";
+    private const string Orig_F1Desc = "Search upcoming events";
+    private const string Orig_F2Title = "Easy booking";
+    private const string Orig_F2Desc = "Reserve your seat in a few clicks.";
+    private const string Orig_F3Title = "Manage attendees";
+    private const string Orig_F3Desc = "Organize participants, view attendee lists and export reports.";
+    private const string Orig_F4Title = "Multilingual support";
+    private const string Orig_F4Desc = "Translate event titles, descriptions and UI messages into multiple languages on demand, powered by Azure Translator.";
+    private const string Orig_CtaTitle = "Ready to explore?";
+    private const string Orig_CtaDesc = "Sign in to manage your bookings or browse public events.";
+    private const string Orig_CtaButton = "Get Started";
+    private const string Orig_Footer = "All rights reserved.";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Subtitle = Orig_Subtitle;
+    private string t_Feature1Title = Orig_F1Title;
+    private string t_Feature1Desc = Orig_F1Desc;
+    private string t_Feature2Title = Orig_F2Title;
+    private string t_Feature2Desc = Orig_F2Desc;
+    private string t_Feature3Title = Orig_F3Title;
+    private string t_Feature3Desc = Orig_F3Desc;
+    private string t_Feature4Title = Orig_F4Title;
+    private string t_Feature4Desc = Orig_F4Desc;
+    private string t_CtaTitle = Orig_CtaTitle;
+    private string t_CtaDesc = Orig_CtaDesc;
+    private string t_CtaButton = Orig_CtaButton;
+    private string t_Footer = Orig_Footer;
+
+    protected override async Task OnInitializedAsync()
     {
-        Navigation.NavigateTo("/events");
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Natychmiastowe tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        // Angielski to oryginał — przywróć bez wywołania API
+        if (lang == "en")
+        {
+            t_Subtitle = Orig_Subtitle;
+            t_Feature1Title = Orig_F1Title;
+            t_Feature1Desc = Orig_F1Desc;
+            t_Feature2Title = Orig_F2Title;
+            t_Feature2Desc = Orig_F2Desc;
+            t_Feature3Title = Orig_F3Title;
+            t_Feature3Desc = Orig_F3Desc;
+            t_Feature4Title = Orig_F4Title;
+            t_Feature4Desc = Orig_F4Desc;
+            t_CtaTitle = Orig_CtaTitle;
+            t_CtaDesc = Orig_CtaDesc;
+            t_CtaButton = Orig_CtaButton;
+            t_Footer = Orig_Footer;
+            return;
+        }
+
+        // Wszystkie teksty tłumaczone równolegle — jedno wywołanie Task.WhenAll
+        var results = await Task.WhenAll(
+            Translator.TranslateAsync(Orig_Subtitle, "en", lang),
+            Translator.TranslateAsync(Orig_F1Title, "en", lang),
+            Translator.TranslateAsync(Orig_F1Desc, "en", lang),
+            Translator.TranslateAsync(Orig_F2Title, "en", lang),
+            Translator.TranslateAsync(Orig_F2Desc, "en", lang),
+            Translator.TranslateAsync(Orig_F3Title, "en", lang),
+            Translator.TranslateAsync(Orig_F3Desc, "en", lang),
+            Translator.TranslateAsync(Orig_F4Title, "en", lang),
+            Translator.TranslateAsync(Orig_F4Desc, "en", lang),
+            Translator.TranslateAsync(Orig_CtaTitle, "en", lang),
+            Translator.TranslateAsync(Orig_CtaDesc, "en", lang),
+            Translator.TranslateAsync(Orig_CtaButton, "en", lang),
+            Translator.TranslateAsync(Orig_Footer, "en", lang)
+        );
+
+        t_Subtitle = results[0];
+        t_Feature1Title = results[1];
+        t_Feature1Desc = results[2];
+        t_Feature2Title = results[3];
+        t_Feature2Desc = results[4];
+        t_Feature3Title = results[5];
+        t_Feature3Desc = results[6];
+        t_Feature4Title = results[7];
+        t_Feature4Desc = results[8];
+        t_CtaTitle = results[9];
+        t_CtaDesc = results[10];
+        t_CtaButton = results[11];
+        t_Footer = results[12];
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

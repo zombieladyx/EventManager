@@ -5,18 +5,20 @@
 @inject IEventService EventService
 @inject NavigationManager Navigation
 @inject UserService UserService
+@inject LanguageStateService LanguageState
+@inject TranslatorService Translator
 
 @attribute [Authorize(Roles = "DefaultUser")]
 
 @* Jeśli event jeszcze się ładuje, pokazujemy komunikat informacyjny *@
 @if (ev == null)
 {
-    <div class="alert alert-info">Loading event details...</div>
+    <div class="alert alert-info">@t_Loading</div>
 }
 @* Jeśli nie znaleziono eventu o podanym ID, pokazujemy ostrzeżenie *@
 else if (string.IsNullOrEmpty(ev.EVENT_ID))
 {
-    <div class="alert alert-warning">Event not found.</div>
+    <div class="alert alert-warning">@t_NotFound</div>
 }
 @* Gdy event został poprawnie pobrany, wyświetlamy jego szczegóły *@
 else
@@ -24,46 +26,46 @@ else
     <div class="card">
         <div class="card-header">
             @* Nagłówek karty z krótkim opisem eventu *@
-            <h3>@ev.SHORT_DESC</h3>
+            <h3>@translatedShortDesc</h3>
         </div>
         <div class="card-body">
             @* Lista szczegółów eventu *@
             <dl class="row">
-                <dt class="col-sm-3">Description:</dt>
-                <dd class="col-sm-9">@ev.DESCRIPTION</dd>
-                
-                <dt class="col-sm-3">Seat limit:</dt>
+                <dt class="col-sm-3">@t_Description</dt>
+                <dd class="col-sm-9">@translatedDescription</dd>
+
+                <dt class="col-sm-3">@t_SeatLimit</dt>
                 <dd class="col-sm-9">@ev.SPACE_LIMIT</dd>
-                
-                <dt class="col-sm-3">Occupied seats:</dt>
+
+                <dt class="col-sm-3">@t_OccupiedSeats</dt>
                 @* Wyświetlenie zajętych miejsc oraz procentu zapełnienia *@
                 <dd class="col-sm-9">
                     @ev.CURR_SPACE
                     <span class="badge @(GetBadgeClass())">@GetOccupancyPercent()%</span>
                 </dd>
-                
-                <dt class="col-sm-3">Event date:</dt>
+
+                <dt class="col-sm-3">@t_EventDate</dt>
                 <dd class="col-sm-9">@ev.EVENT_DATE.ToString("dd.MM.yyyy")</dd>
             </dl>
         </div>
         <div class="card-footer">
             @* Przycisk powrotu do listy eventów *@
-            <button class="btn btn-secondary me-2" @onclick="BackToList">Back to list</button>
+            <button class="btn btn-secondary me-2" @onclick="BackToList">@t_BackToList</button>
 
             @* Jeśli aktualny użytkownik już dołączył do eventu, pokazujemy opcję opuszczenia *@
             @if (isJoined)
             {
-                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">Leave event (already joined)</button>
+                <button class="btn btn-outline-secondary me-2" @onclick="LeaveEvent">@t_LeaveEvent</button>
             }
             @* Jeśli są jeszcze wolne miejsca, pozwalamy dołączyć *@
             else if (ev?.CURR_SPACE < ev?.SPACE_LIMIT)
             {
-                <button class="btn btn-success me-2" @onclick="JoinEvent">Join event</button>
+                <button class="btn btn-success me-2" @onclick="JoinEvent">@t_JoinEvent</button>
             }
             @* Jeśli event jest pełny, pokazujemy informację o braku miejsc *@
             else
             {
-                <span class="badge bg-danger me-2">No free seats</span>
+                <span class="badge bg-danger me-2">@t_NoSeats</span>
             }
         </div>
     </div>
@@ -82,24 +84,130 @@ else
     @* Email aktualnie zalogowanego użytkownika pobrany z UserService *@
     private string currentUserId = string.Empty;
 
+    @* Przetłumaczone treści dynamiczne eventu *@
+    private string translatedShortDesc = string.Empty;
+    private string translatedDescription = string.Empty;
+
+    // Oryginalne teksty UI angielskie
+    private const string Orig_Loading = "Loading event details...";
+    private const string Orig_NotFound = "Event not found.";
+    private const string Orig_Description = "Description:";
+    private const string Orig_SeatLimit = "Seat limit:";
+    private const string Orig_Occupied = "Occupied seats:";
+    private const string Orig_EventDate = "Event date:";
+    private const string Orig_BackToList = "Back to list";
+    private const string Orig_LeaveEvent = "Leave event (already joined)";
+    private const string Orig_JoinEvent = "Join event";
+    private const string Orig_NoSeats = "No free seats";
+
+    // Aktualne teksty wyświetlane w UI
+    private string t_Loading = Orig_Loading;
+    private string t_NotFound = Orig_NotFound;
+    private string t_Description = Orig_Description;
+    private string t_SeatLimit = Orig_SeatLimit;
+    private string t_OccupiedSeats = Orig_Occupied;
+    private string t_EventDate = Orig_EventDate;
+    private string t_BackToList = Orig_BackToList;
+    private string t_LeaveEvent = Orig_LeaveEvent;
+    private string t_JoinEvent = Orig_JoinEvent;
+    private string t_NoSeats = Orig_NoSeats;
+
     @* Pobranie danych eventu oraz sprawdzenie, czy użytkownik już dołączył *@
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventAsync(Id);
 
-        @* Pobranie emaila zalogowanego użytkownika z danych autentykacji *@
+        @* Pobranie emaila zalogowanego użytkownika *@
         currentUserId = UserService.GetEmail();
 
         @* Sprawdzenie, czy użytkownik jest już przypisany do eventu *@
         isJoined = await EventService.IsUserJoined(currentUserId, Id);
 
-        @*Sprawdzenie, czy użytkownik zaakceptował regulamin *@
+        @* Sprawdzenie, czy użytkownik zaakceptował regulamin *@
         var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);
         if (termsValue != "YES")
         {
-            // Jeżeli nie zaakceptował, przekierowujemy go do strony z regulaminem, aby mógł to zrobić przed przeglądaniem szczegółów eventu
             Navigation.NavigateTo("/statute");
             return;
+        }
+
+        // Subskrypcja zmiany języka
+        LanguageState.OnLanguageChanged += OnLanguageChangedHandler;
+
+        // Tłumaczenie przy wejściu na stronę
+        await TranslateAll(LanguageState.CurrentLanguage);
+    }
+
+    private async void OnLanguageChangedHandler()
+    {
+        await TranslateAll(LanguageState.CurrentLanguage);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TranslateAll(string lang)
+    {
+        if (lang == "en")
+        {
+            // Przywróć teksty UI
+            t_Loading = Orig_Loading;
+            t_NotFound = Orig_NotFound;
+            t_Description = Orig_Description;
+            t_SeatLimit = Orig_SeatLimit;
+            t_OccupiedSeats = Orig_Occupied;
+            t_EventDate = Orig_EventDate;
+            t_BackToList = Orig_BackToList;
+            t_LeaveEvent = Orig_LeaveEvent;
+            t_JoinEvent = Orig_JoinEvent;
+            t_NoSeats = Orig_NoSeats;
+
+            // Przywróć oryginalne treści eventu
+            translatedShortDesc = ev?.SHORT_DESC ?? string.Empty;
+            translatedDescription = ev?.DESCRIPTION ?? string.Empty;
+            return;
+        }
+
+        // Teksty UI i treści eventu tłumaczone równolegle
+        var uiTask = Task.WhenAll(
+            Translator.TranslateAsync(Orig_Loading, "en", lang),
+            Translator.TranslateAsync(Orig_NotFound, "en", lang),
+            Translator.TranslateAsync(Orig_Description, "en", lang),
+            Translator.TranslateAsync(Orig_SeatLimit, "en", lang),
+            Translator.TranslateAsync(Orig_Occupied, "en", lang),
+            Translator.TranslateAsync(Orig_EventDate, "en", lang),
+            Translator.TranslateAsync(Orig_BackToList, "en", lang),
+            Translator.TranslateAsync(Orig_LeaveEvent, "en", lang),
+            Translator.TranslateAsync(Orig_JoinEvent, "en", lang),
+            Translator.TranslateAsync(Orig_NoSeats, "en", lang)
+        );
+
+        // Treści eventu tłumaczone tylko jeśli event został pobrany
+        var eventTask = ev != null
+            ? Task.WhenAll(
+                Translator.TranslateAsync(ev.SHORT_DESC ?? string.Empty, "en", lang),
+                Translator.TranslateAsync(ev.DESCRIPTION ?? string.Empty, "en", lang)
+              )
+            : Task.FromResult(Array.Empty<string>());
+
+        // Czekamy na oba zadania równolegle
+        await Task.WhenAll(uiTask, eventTask);
+
+        var ui = await uiTask;
+        t_Loading = ui[0];
+        t_NotFound = ui[1];
+        t_Description = ui[2];
+        t_SeatLimit = ui[3];
+        t_OccupiedSeats = ui[4];
+        t_EventDate = ui[5];
+        t_BackToList = ui[6];
+        t_LeaveEvent = ui[7];
+        t_JoinEvent = ui[8];
+        t_NoSeats = ui[9];
+
+        var evT = await eventTask;
+        if (evT.Length == 2)
+        {
+            translatedShortDesc = evT[0];
+            translatedDescription = evT[1];
         }
     }
 
@@ -107,9 +215,7 @@ else
     private string GetBadgeClass()
     {
         if (ev == null) return "";
-
         var percent = (double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100;
-
         return percent > 90 ? "bg-danger" : percent > 70 ? "bg-warning" : "bg-success";
     }
 
@@ -117,7 +223,6 @@ else
     private string GetOccupancyPercent()
     {
         if (ev == null) return "";
-
         return Math.Round((double)ev.CURR_SPACE / ev.SPACE_LIMIT * 100).ToString();
     }
 
@@ -138,5 +243,10 @@ else
         await EventService.LeaveEventAsync(currentUserId, Id);
         isJoined = false;
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        LanguageState.OnLanguageChanged -= OnLanguageChangedHandler;
     }
 }

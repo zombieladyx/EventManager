@@ -4,6 +4,8 @@ using EventManager.Components;
 using EventManager.Components.Middleware;
 //przestrzeń nazw z EventManagerContext
 using EventManager.Data;
+using Microsoft.AspNetCore.Authentication;
+
 //dla cookie-based auth
 using Microsoft.AspNetCore.Authentication.Cookies;
 //dla konfiguracji EF Core (EntityFramework Core)
@@ -25,7 +27,7 @@ builder.Services.AddDbContext<EventManagerContext>(options => //rejestracja kont
 //rejestracja serwisu użytkowników
 builder.Services.AddScoped<UserService>(); //rejestracja UserService jako serwis o czasie życia scoped (nowa instancja na każde żądanie HTTP)
 builder.Services.AddScoped<IEventService, EventService>(); //rejestracja EventService
-builder.Services.AddHttpContextAccessor();// Rejestruje usługę IHttpContextAccessor, aby można było odczytywać aktualny HttpContext // i dane zalogowanego użytkownika, np. email z claims.
+
 //konfiguracja uwierzytelniania (cookies)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) //włącza mechanizm uwierzytelniania w aplikacji i używa schematu opartego na cookies
     .AddCookie(options => //konfiguracja cookie auth
@@ -37,6 +39,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 //autoryzacja
 builder.Services.AddAuthorization(); //włącza system autoryzacji
 
+
+//rejestracja serwisów związanych z tłumaczeniami i językami
+builder.Services.AddScoped<LanguageStateService>(); //rejestracja LanguageStateService, który będzie przechowywał aktualny język aplikacji i powiadamiał o zmianach
+builder.Services.AddHttpClient<TranslatorService>(); //rejestracja TranslatorService, który będzie korzystał z HttpClient do komunikacji z zewnętrznym API tłumaczeń
+
+//rejestracja serwisu do odczytania aktualnego użytkownika z HttpContext
+builder.Services.AddHttpContextAccessor();// Rejestruje usługę IHttpContextAccessor, aby można było odczytywać aktualny HttpContext // i dane zalogowanego użytkownika, np. email z claims.
 //budowanie aplikacji
 var app = builder.Build();
 
@@ -56,10 +65,17 @@ app.UseHttpsRedirection(); //przekierowuje z HTTP na HTTPS
 app.UseAuthentication(); //odczytuje cookie
 app.UseAuthorization(); //sprawdza, czy użytkownik ma dostęp
 app.UseMiddleware<AuthMiddleware>(); //własne middleware
+//app.UseMiddleware<LanguageMiddleware>(); //własne middleware do ustawiania języka na podstawie cookie
 
 //antiforgery
 app.UseAntiforgery(); //włącza ochronę przed CSRF
+//wylogowanie użytkownika przez endpoint /logout, który wywołuje SignOutAsync, usuwając cookie uwierzytelniające, a następnie przekierowuje na stronę główną
+app.MapGet("/logout", async (HttpContext context) =>
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
+    return Results.Redirect("/");
+});
 //statyczne pliki i mapowanie komponentów
 app.MapStaticAssets(); //obsługa plików statycznych, np. css
 app.MapRazorComponents<App>() //głównym komponentem aplikacji jest App
