@@ -1,12 +1,14 @@
 ﻿@page "/events"
 @using Microsoft.AspNetCore.Authorization
 @using EventManager.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject UserService UserService
 @inject NavigationManager Navigation
 @inject LanguageStateService LanguageState
 @inject TranslatorService Translator
+@inject AuthenticationStateProvider AuthStateProvider
 
 @attribute [Authorize(Roles = "DefaultUser")]
 
@@ -113,7 +115,13 @@ else
         events = await EventService.GetEventsAsync();
 
         // Pobranie e-maila zalogowanego użytkownika
-        currentUserId = UserService.GetEmail();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            currentUserId = user.Identity.Name;
+        }
 
         // Sprawdzenie akceptacji regulaminu
         var termsValue = await UserService.GetTermsAcceptanceAsync(currentUserId);

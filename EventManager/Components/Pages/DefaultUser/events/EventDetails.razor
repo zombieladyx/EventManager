@@ -1,12 +1,14 @@
 ﻿@page "/events/{Id}"
 @using Microsoft.AspNetCore.Authorization
 @using EventManager.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode InteractiveServer
 @inject IEventService EventService
 @inject NavigationManager Navigation
 @inject UserService UserService
 @inject LanguageStateService LanguageState
 @inject TranslatorService Translator
+@inject AuthenticationStateProvider AuthStateProvider
 
 @attribute [Authorize(Roles = "DefaultUser")]
 
@@ -117,8 +119,14 @@ else
     {
         ev = await EventService.GetEventAsync(Id);
 
-        @* Pobranie emaila zalogowanego użytkownika *@
-        currentUserId = UserService.GetEmail();
+        //Pobranie emaila zalogowanego użytkownika
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            currentUserId = user.Identity.Name;
+        }
 
         @* Sprawdzenie, czy użytkownik jest już przypisany do eventu *@
         isJoined = await EventService.IsUserJoined(currentUserId, Id);
